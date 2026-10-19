@@ -341,6 +341,290 @@ function closeHomeImage() {
     }
 }
 
+const monsterGalleryDatabaseName = 'lifehub_monster_gallery';
+let monsterGalleryState = null;
+let monsterGalleryLoadPromise = null;
+
+function openMonsterGalleryDatabase() {
+    return new Promise((resolve, reject) => {
+        if (!window.indexedDB) {
+            reject(new Error('Questo browser non supporta il salvataggio delle foto.'));
+            return;
+        }
+        const request = window.indexedDB.open(monsterGalleryDatabaseName, 1);
+        request.onupgradeneeded = () => {
+            request.result.createObjectStore('galleries', { keyPath: 'id' });
+        };
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error || new Error('Impossibile aprire la raccolta foto.'));
+    });
+}
+
+function loadMonsterGallery() {
+    const status = document.getElementById('monster-gallery-status');
+    if (monsterGalleryState) {
+        renderMonsterGallery();
+        return Promise.resolve();
+    }
+    if (monsterGalleryLoadPromise) return monsterGalleryLoadPromise;
+
+    monsterGalleryLoadPromise = openMonsterGalleryDatabase()
+        .then(database => new Promise((resolve, reject) => {
+            const transaction = database.transaction('galleries', 'readonly');
+            const request = transaction.objectStore('galleries').get('main');
+            let gallery;
+            request.onsuccess = () => { gallery = request.result; };
+            transaction.oncomplete = () => {
+                database.close();
+                resolve(gallery || { id: 'main', photos: [], folders: [] });
+            };
+            transaction.onerror = () => {
+                database.close();
+                reject(transaction.error || new Error('Impossibile caricare le foto.'));
+            };
+            transaction.onabort = () => {
+                database.close();
+                reject(transaction.error || new Error('Impossibile caricare le foto.'));
+            };
+        }))
+        .then(gallery => {
+            monsterGalleryState = gallery;
+            if (status) {
+                status.textContent = '';
+                status.classList.add('hidden');
+            }
+            renderMonsterGallery();
+        })
+        .catch(error => showMonsterGalleryStatus(error.message || 'Impossibile caricare la raccolta foto.'))
+        .finally(() => { monsterGalleryLoadPromise = null; });
+    return monsterGalleryLoadPromise;
+}
+
+function saveMonsterGallery(gallery) {
+    return openMonsterGalleryDatabase().then(database => new Promise((resolve, reject) => {
+        const transaction = database.transaction('galleries', 'readwrite');
+        transaction.objectStore('galleries').put(gallery);
+        transaction.oncomplete = () => {
+            database.close();
+            resolve();
+        };
+        transaction.onerror = () => {
+            database.close();
+            reject(transaction.error || new Error('Impossibile salvare le modifiche alla raccolta.'));
+        };
+        transaction.onabort = () => {
+            database.close();
+            reject(transaction.error || new Error('Impossibile salvare le modifiche alla raccolta.'));
+        };
+    }));
+}
+
+function showMonsterGalleryStatus(message) {
+    const status = document.getElementById('monster-gallery-status');
+    if (!status) return;
+    status.textContent = message;
+    status.classList.toggle('hidden', !message);
+}
+
+function renderMonsterPhotoRow(photos, group, label) {
+    const safeLabel = escapeRecipeHTML(label);
+    const cards = photos.map((photo, index) => `
+        <div class="relative h-52 w-[7.3rem] shrink-0 overflow-hidden rounded-2xl border border-[#b5c99a]/25 bg-[#1c1817]">
+            <button type="button" onclick="openMonsterImage('${group}', ${index})" aria-label="Apri foto ${safeLabel} ${index + 1}" class="h-full w-full">
+                <img src="${photo.data}" alt="${safeLabel} ${index + 1}" class="h-full w-full object-cover">
+            </button>
+            <button type="button" onclick="removeMonsterPhoto('${group}', ${index})" aria-label="Rimuovi foto ${safeLabel} ${index + 1}" title="Elimina foto" class="absolute right-2 top-2 flex h-9 w-9 items-center justify-center rounded-full border border-white/30 bg-[#1c1817]/75 text-[#f3d5b5] shadow-lg backdrop-blur-sm transition-all hover:!bg-[#e2b4bd] hover:!text-[#1c1817] active:scale-90">
+                <i class="fa-solid fa-trash-can text-sm"></i>
+            </button>
+        </div>
+    `).join('');
+    return `
+        <div class="flex w-full min-w-0 items-center gap-3 overflow-x-auto overscroll-x-contain no-scrollbar py-1 scroll-smooth snap-x" style="-webkit-overflow-scrolling: touch; touch-action: pan-x;" aria-label="${safeLabel}, scorrimento orizzontale">
+            ${cards}
+        </div>
+    `;
+}
+
+function renderMonsterGallery() {
+    if (!monsterGalleryState) return;
+    const rows = document.getElementById('monster-gallery-rows');
+    const foldersContainer = document.getElementById('monster-folders');
+    if (!rows || !foldersContainer) return;
+
+    const firstRow = monsterGalleryState.photos.slice(0, 5);
+    const secondRow = monsterGalleryState.photos.slice(5);
+    rows.innerHTML = `
+        ${renderMonsterPhotoRow(firstRow, 'main-first', 'Riga 1')}
+        ${renderMonsterPhotoRow(secondRow, 'main-second', 'Riga 2')}
+    `;
+
+    foldersContainer.innerHTML = monsterGalleryState.folders.length
+        ? monsterGalleryState.folders.map(folder => `
+            <section class="cozy-inset-panel min-w-0 space-y-3 p-3">
+                <div class="flex items-center justify-between gap-2">
+                    <h4 class="min-w-0 truncate text-sm font-cloud font-bold text-[#f3d5b5]">${escapeRecipeHTML(folder.name)}</h4>
+                    <div class="flex shrink-0 items-center gap-2">
+                        <input id="monster-folder-input-${folder.id}" type="file" accept="image/*" multiple onchange="addMonsterFolderPhotos(event, '${folder.id}')" class="hidden">
+                        <button type="button" onclick="document.getElementById('monster-folder-input-${folder.id}').click()" aria-label="Aggiungi foto a ${escapeRecipeHTML(folder.name)}" class="flex h-9 w-9 items-center justify-center rounded-xl bg-[#b5c99a] text-[#1c1817]"><i class="fa-solid fa-plus"></i></button>
+                        <button type="button" onclick="removeMonsterFolder('${folder.id}')" aria-label="Elimina cartella ${escapeRecipeHTML(folder.name)}" class="flex h-9 w-9 items-center justify-center rounded-xl bg-[#382d2a] text-[#e8c2ca]"><i class="fa-solid fa-trash-can"></i></button>
+                    </div>
+                </div>
+                ${renderMonsterPhotoRow(folder.photos, `folder-${folder.id}`, folder.name)}
+            </section>
+        `).join('')
+        : '<p class="text-sm text-[#c7b3a6]">Non hai ancora cartelle. Creane una per organizzare altre foto.</p>';
+}
+
+function openMonsterImage(group, index) {
+    if (!monsterGalleryState) return;
+    const photos = group === 'main-first'
+        ? monsterGalleryState.photos.slice(0, 5)
+        : group === 'main-second'
+            ? monsterGalleryState.photos.slice(5)
+            : monsterGalleryState.folders.find(folder => `folder-${folder.id}` === group)?.photos;
+    const photo = photos?.[index];
+    const lightbox = document.getElementById('home-image-lightbox');
+    const lightboxImage = document.getElementById('home-image-lightbox-img');
+    if (!photo || !lightbox || !lightboxImage) return;
+    lightboxImage.src = photo.data;
+    lightboxImage.alt = 'Foto Monster Energy';
+    lightbox.classList.remove('hidden');
+    lightbox.classList.add('flex');
+    document.body.classList.add('overflow-hidden');
+    document.getElementById('home-image-lightbox-close')?.focus();
+}
+
+async function persistMonsterGallery(nextGallery) {
+    await saveMonsterGallery(nextGallery);
+    monsterGalleryState = nextGallery;
+    renderMonsterGallery();
+    showMonsterGalleryStatus('');
+}
+
+async function addMonsterPhotos(event) {
+    const input = event.target;
+    const files = Array.from(input.files || []);
+    if (!files.length) return;
+    try {
+        await loadMonsterGallery();
+        if (!monsterGalleryState) return;
+        const photos = [];
+        for (const file of files) {
+            if (!file.type.startsWith('image/')) throw new Error('Seleziona solo file immagine.');
+            photos.push({
+                id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+                data: await resizeImageFile(file)
+            });
+        }
+        await persistMonsterGallery({
+            ...monsterGalleryState,
+            photos: [...monsterGalleryState.photos, ...photos]
+        });
+    } catch (error) {
+        showMonsterGalleryStatus(error.message || 'Impossibile aggiungere le foto.');
+    } finally {
+        input.value = '';
+    }
+}
+
+async function addMonsterFolderPhotos(event, folderId) {
+    const input = event.target;
+    const files = Array.from(input.files || []);
+    if (!files.length) return;
+    try {
+        await loadMonsterGallery();
+        if (!monsterGalleryState) return;
+        const photos = [];
+        for (const file of files) {
+            if (!file.type.startsWith('image/')) throw new Error('Seleziona solo file immagine.');
+            photos.push({
+                id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+                data: await resizeImageFile(file)
+            });
+        }
+        const folders = monsterGalleryState.folders.map(folder => folder.id === folderId
+            ? { ...folder, photos: [...folder.photos, ...photos] }
+            : folder);
+        if (!folders.some(folder => folder.id === folderId)) throw new Error('La cartella selezionata non esiste più.');
+        await persistMonsterGallery({ ...monsterGalleryState, folders });
+    } catch (error) {
+        showMonsterGalleryStatus(error.message || 'Impossibile aggiungere le foto alla cartella.');
+    } finally {
+        input.value = '';
+    }
+}
+
+async function removeMonsterPhoto(group, index) {
+    if (!monsterGalleryState) return;
+    let nextGallery;
+    if (group === 'main-first' || group === 'main-second') {
+        const photos = [...monsterGalleryState.photos];
+        const photoIndex = group === 'main-first' ? index : index + 5;
+        photos.splice(photoIndex, 1);
+        nextGallery = { ...monsterGalleryState, photos };
+    } else {
+        const folderId = group.slice('folder-'.length);
+        const folders = monsterGalleryState.folders.map(folder => {
+            if (folder.id !== folderId) return folder;
+            const photos = [...folder.photos];
+            photos.splice(index, 1);
+            return { ...folder, photos };
+        });
+        nextGallery = { ...monsterGalleryState, folders };
+    }
+    try {
+        await persistMonsterGallery(nextGallery);
+    } catch (error) {
+        showMonsterGalleryStatus(error.message || 'Impossibile rimuovere la foto.');
+    }
+}
+
+function toggleMonsterFolderForm(show) {
+    const form = document.getElementById('monster-folder-form');
+    if (!form) return;
+    const shouldShow = show ?? form.classList.contains('hidden');
+    form.classList.toggle('hidden', !shouldShow);
+    if (shouldShow) document.getElementById('monster-folder-name')?.focus();
+}
+
+async function addMonsterFolder(event) {
+    event.preventDefault();
+    await loadMonsterGallery();
+    if (!monsterGalleryState) return;
+    const input = document.getElementById('monster-folder-name');
+    const name = input?.value.trim();
+    if (!name) return;
+    const folder = {
+        id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        name,
+        photos: []
+    };
+    try {
+        await persistMonsterGallery({
+            ...monsterGalleryState,
+            folders: [...monsterGalleryState.folders, folder]
+        });
+        input.value = '';
+        toggleMonsterFolderForm(false);
+    } catch (error) {
+        showMonsterGalleryStatus(error.message || 'Impossibile creare la cartella.');
+    }
+}
+
+async function removeMonsterFolder(folderId) {
+    if (!monsterGalleryState) return;
+    const folder = monsterGalleryState.folders.find(item => item.id === folderId);
+    if (!folder || !window.confirm(`Eliminare la cartella "${folder.name}" e tutte le sue foto?`)) return;
+    try {
+        await persistMonsterGallery({
+            ...monsterGalleryState,
+            folders: monsterGalleryState.folders.filter(item => item.id !== folderId)
+        });
+    } catch (error) {
+        showMonsterGalleryStatus(error.message || 'Impossibile eliminare la cartella.');
+    }
+}
+
 function getHomeTasksStorageKey() {
     return `lifehub_home_tasks_${getLocalDateKey()}`;
 }
@@ -1878,6 +2162,9 @@ function showNewSection(targetSection, tabName, homeBg) {
         }
         else if(tabName === 'ricette') {
             renderRecipes();
+        }
+        else if(tabName === 'monster') {
+            loadMonsterGallery();
         }
     }
 }
