@@ -1789,6 +1789,36 @@
             box-shadow: none !important;
         }
 
+        #app-content #sec-home .home-backup h2,
+        #app-content #sec-home .home-backup button,
+        #app-content #sec-home .home-backup label {
+            color: #F0F0EB !important;
+        }
+
+        #app-content #sec-home .home-backup button i,
+        #app-content #sec-home .home-backup label i {
+            color: #b5c99a !important;
+        }
+
+        #app-content #sec-home .home-backup p {
+            color: #c7b3a6 !important;
+        }
+
+        #app-content #sec-home .home-space-heading {
+            color: #F0F0EB !important;
+        }
+
+        #app-content #sec-home .home-backup h2 i {
+            color: #b5c99a !important;
+        }
+
+        #app-content #sec-home .home-backup button {
+            padding: 0 !important;
+            border: 0 !important;
+            background: transparent !important;
+            box-shadow: none !important;
+        }
+
         @media (max-width: 480px) {
             #sec-home {
                 gap: 0.75rem;
@@ -1811,18 +1841,20 @@
             }
 
             #sec-home .home-datetime > div:first-child {
-                align-items: flex-start;
+                flex-direction: column;
+                align-items: center;
+                gap: 0.2rem;
             }
 
             #sec-home .home-datetime > div:first-child i {
                 flex-shrink: 0;
-                margin-top: 0.1rem;
+                margin-top: 0;
             }
 
             #app-content #sec-home #current-date {
                 font-size: 0.8rem;
                 line-height: 1.25;
-                text-align: left;
+                text-align: center;
                 text-wrap: balance;
             }
 
@@ -1951,7 +1983,7 @@
 
             <section class="space-y-1.5">
                 <div class="flex items-center justify-between px-1">
-                    <h2 class="font-cloud font-bold text-xs text-[#f3d5b5]">Apri il tuo spazio</h2>
+                    <h2 class="home-space-heading font-cloud font-bold text-xs text-[#f3d5b5]">Apri il tuo spazio</h2>
                 </div>
                 <div class="grid grid-cols-3 gap-1.5">
                     <button type="button" onclick="switchTab('gym')" class="cozy-card rounded-lg p-2 text-left transition-transform active:scale-95">
@@ -1965,6 +1997,24 @@
                         <span class="block text-[10px] font-cloud font-bold text-[#f7f0eb]">Monster Energy</span>
                     </button>
                 </div>
+            </section>
+
+            <section class="home-backup border-t border-white/15 px-1 py-2.5">
+                <div class="flex items-center justify-between gap-2">
+                    <h2 class="flex items-center gap-1.5 font-cloud text-xs font-bold text-[#f3d5b5]">
+                        <i class="fa-solid fa-cloud-arrow-down text-[10px] text-[#b5c99a]"></i> Backup
+                    </h2>
+                    <div class="flex shrink-0 items-center gap-3">
+                        <button type="button" onclick="exportAppData()" class="text-[11px] font-semibold text-[#d5ddd6] active:opacity-70">
+                            <i class="fa-solid fa-download mr-1 text-[9px]"></i>Scarica
+                        </button>
+                        <label for="backup-import-input" class="cursor-pointer text-[11px] font-semibold text-[#d5ddd6] active:opacity-70">
+                            <i class="fa-solid fa-upload mr-1 text-[9px]"></i>Ripristina
+                        </label>
+                        <input id="backup-import-input" type="file" accept="application/json,.json" onchange="importAppData(event)" class="hidden">
+                    </div>
+                </div>
+                <p id="backup-status" role="status" aria-live="polite" class="hidden text-[10px] text-[#e8c2ca]"></p>
             </section>
 
         </section>

@@ -419,6 +419,133 @@ function saveMonsterGallery(gallery) {
     }));
 }
 
+function showBackupStatus(message) {
+    const status = document.getElementById('backup-status');
+    if (!status) return;
+    status.textContent = message;
+    status.classList.toggle('hidden', !message);
+}
+
+async function exportAppData() {
+    try {
+        const localStorageData = Object.keys(localStorage).map(key => [key, localStorage.getItem(key)]);
+        const database = await openMonsterGalleryDatabase();
+        const monsterGallery = await new Promise((resolve, reject) => {
+            const transaction = database.transaction('galleries', 'readonly');
+            const request = transaction.objectStore('galleries').get('main');
+            let gallery;
+            request.onsuccess = () => { gallery = request.result || null; };
+            transaction.oncomplete = () => {
+                database.close();
+                resolve(gallery);
+            };
+            transaction.onerror = () => {
+                database.close();
+                reject(transaction.error || new Error('Impossibile leggere le foto per il backup.'));
+            };
+            transaction.onabort = () => {
+                database.close();
+                reject(transaction.error || new Error('Impossibile leggere le foto per il backup.'));
+            };
+        });
+        const backup = {
+            format: 'lifehub-backup',
+            version: 1,
+            createdAt: new Date().toISOString(),
+            localStorage: localStorageData,
+            monsterGallery
+        };
+        const blob = new Blob([JSON.stringify(backup)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `lifehub-backup-${new Date().toISOString().slice(0, 10)}.json`;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+        showBackupStatus('Backup scaricato. Conservalo in un posto sicuro.');
+    } catch (error) {
+        showBackupStatus(error.message || 'Impossibile creare il backup.');
+    }
+}
+
+function isValidAppBackup(backup) {
+    return backup
+        && backup.format === 'lifehub-backup'
+        && backup.version === 1
+        && Array.isArray(backup.localStorage)
+        && backup.localStorage.every(entry =>
+            Array.isArray(entry)
+            && entry.length === 2
+            && typeof entry[0] === 'string'
+            && typeof entry[1] === 'string'
+        )
+        && (backup.monsterGallery === null
+            || (backup.monsterGallery
+                && backup.monsterGallery.id === 'main'
+                && Array.isArray(backup.monsterGallery.photos)
+                && Array.isArray(backup.monsterGallery.folders)));
+}
+
+async function importAppData(event) {
+    const input = event.target;
+    const file = input.files?.[0];
+    if (!file) return;
+
+    let previousStorage = null;
+    let restoreStorageOnFailure = false;
+    try {
+        const backup = JSON.parse(await file.text());
+        if (!isValidAppBackup(backup)) {
+            throw new Error('Il file selezionato non è un backup LifeHub valido.');
+        }
+        if (!window.confirm('Il ripristino sostituirà tutti i dati attualmente salvati in questa app. Vuoi continuare?')) return;
+
+        previousStorage = Object.keys(localStorage).map(key => [key, localStorage.getItem(key)]);
+        localStorage.clear();
+        restoreStorageOnFailure = true;
+        backup.localStorage.forEach(([key, value]) => localStorage.setItem(key, value));
+
+        const database = await openMonsterGalleryDatabase();
+        await new Promise((resolve, reject) => {
+            const transaction = database.transaction('galleries', 'readwrite');
+            const store = transaction.objectStore('galleries');
+            if (backup.monsterGallery) {
+                store.put(backup.monsterGallery);
+            } else {
+                store.delete('main');
+            }
+            transaction.oncomplete = () => {
+                database.close();
+                resolve();
+            };
+            transaction.onerror = () => {
+                database.close();
+                reject(transaction.error || new Error('Impossibile ripristinare le foto.'));
+            };
+            transaction.onabort = () => {
+                database.close();
+                reject(transaction.error || new Error('Impossibile ripristinare le foto.'));
+            };
+        });
+        showBackupStatus('Backup ripristinato. Ricarica l’app per visualizzare tutti i dati.');
+    } catch (error) {
+        if (restoreStorageOnFailure) {
+            try {
+                localStorage.clear();
+                previousStorage.forEach(([key, value]) => localStorage.setItem(key, value));
+            } catch (restoreError) {
+                showBackupStatus(`Ripristino non riuscito (${error.message || 'errore sconosciuto'}); non è stato possibile recuperare tutti i dati precedenti (${restoreError.message || 'errore sconosciuto'}).`);
+                return;
+            }
+        }
+        showBackupStatus(error.message || 'Impossibile ripristinare il backup.');
+    } finally {
+        input.value = '';
+    }
+}
+
 function showMonsterGalleryStatus(message) {
     const status = document.getElementById('monster-gallery-status');
     if (!status) return;
