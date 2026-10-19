@@ -1885,6 +1885,7 @@ let activeRecipeFormId = null;
 let activeRecipeEditId = null;
 let activeRecipePhotoRemoved = false;
 const openRecipeCategoryIds = new Set();
+const collapsedRecipeIds = new Set();
 
 function loadRecipeCategories() {
     try {
@@ -2013,26 +2014,50 @@ function renderRecipeCard(category, recipe) {
         `;
     }
 
+    const isCollapsed = collapsedRecipeIds.has(recipe.id);
     return `
-        <article class="recipe-card ${recipe.photo ? 'has-photo' : 'no-photo'}">
-            <div class="recipe-card-content space-y-2">
-                <h5 class="font-cloud font-bold text-base text-[#f3d5b5] break-words">${escapeRecipeHTML(recipe.title)}</h5>
-                ${recipe.description ? `
-                    <p class="text-sm text-[#d9ccbf] leading-relaxed whitespace-pre-wrap break-words ${recipe.description.length > 140 ? 'recipe-description-collapsed' : ''}">${escapeRecipeHTML(recipe.description)}</p>
-                    ${recipe.description.length > 140 ? '<button type="button" onclick="toggleRecipeDescription(this)" class="text-xs font-bold text-[#e8c2ca]">Mostra tutto</button>' : ''}
-                ` : ''}
-            </div>
-            ${recipe.photo ? `<img src="${recipe.photo}" alt="${escapeRecipeHTML(recipe.title)}" class="recipe-card-photo rounded-xl border border-[#e8c2ca]/20 shadow-md">` : ''}
-            <div class="recipe-card-actions">
-                <button type="button" onclick="startRecipeEdit('${recipe.id}')" aria-label="Modifica ${escapeRecipeHTML(recipe.title)}" title="Modifica ricetta" class="w-8 h-8 rounded-full bg-[#1c1817]/45 text-[#c7b3a6] hover:text-[#e8c2ca] transition-colors">
-                    <i class="fa-solid fa-pen"></i>
-                </button>
-                <button type="button" onclick="deleteRecipe('${category.id}', '${recipe.id}')" aria-label="Elimina ${escapeRecipeHTML(recipe.title)}" title="Elimina ricetta" class="w-8 h-8 rounded-full bg-[#1c1817]/45 text-[#c7b3a6] hover:text-rose-300 transition-colors">
-                    <i class="fa-solid fa-trash-can"></i>
-                </button>
+        <article class="recipe-card">
+            <button type="button" aria-expanded="${!isCollapsed}" aria-controls="recipe-panel-${recipe.id}" onclick="toggleRecipeCard(this, '${recipe.id}')" class="recipe-card-toggle">
+                <h5 class="font-cloud font-bold text-base text-[#f3d5b5] break-words text-left">${escapeRecipeHTML(recipe.title)}</h5>
+                <i class="fa-solid fa-chevron-down text-[10px] text-[#9c8a80] transition-transform duration-300 ${isCollapsed ? '' : 'rotate-180'}"></i>
+            </button>
+            <div id="recipe-panel-${recipe.id}" aria-hidden="${isCollapsed}" class="recipe-card-panel ${isCollapsed ? '' : 'is-open'}">
+                <div ${isCollapsed ? 'inert' : ''} class="recipe-card-panel-inner">
+                    <div class="recipe-card-body ${recipe.photo ? 'has-photo' : 'no-photo'}">
+                        <div class="recipe-card-content space-y-2">
+                            ${recipe.description ? `
+                                <p class="text-sm text-[#d9ccbf] leading-relaxed whitespace-pre-wrap break-words ${recipe.description.length > 140 ? 'recipe-description-collapsed' : ''}">${escapeRecipeHTML(recipe.description)}</p>
+                                ${recipe.description.length > 140 ? '<button type="button" onclick="toggleRecipeDescription(this)" class="text-xs font-bold text-[#e8c2ca]">Mostra tutto</button>' : ''}
+                            ` : '<p class="text-xs text-[#9c8a80]">Nessuna descrizione.</p>'}
+                        </div>
+                        ${recipe.photo ? `<img src="${recipe.photo}" alt="${escapeRecipeHTML(recipe.title)}" class="recipe-card-photo rounded-xl border border-[#e8c2ca]/20 shadow-md">` : ''}
+                    </div>
+                    <div class="recipe-card-actions">
+                        <button type="button" onclick="startRecipeEdit('${recipe.id}')" aria-label="Modifica ${escapeRecipeHTML(recipe.title)}" title="Modifica ricetta" class="w-8 h-8 rounded-full bg-[#1c1817]/45 text-[#c7b3a6] hover:text-[#e8c2ca] transition-colors">
+                            <i class="fa-solid fa-pen"></i>
+                        </button>
+                        <button type="button" onclick="deleteRecipe('${category.id}', '${recipe.id}')" aria-label="Elimina ${escapeRecipeHTML(recipe.title)}" title="Elimina ricetta" class="w-8 h-8 rounded-full bg-[#1c1817]/45 text-[#c7b3a6] hover:text-rose-300 transition-colors">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </div>
+                </div>
             </div>
         </article>
     `;
+}
+
+function toggleRecipeCard(button, recipeId) {
+    const isOpen = button.getAttribute('aria-expanded') !== 'true';
+    const panel = document.getElementById(`recipe-panel-${recipeId}`);
+    if (!panel) return;
+
+    button.setAttribute('aria-expanded', String(isOpen));
+    panel.setAttribute('aria-hidden', String(!isOpen));
+    panel.classList.toggle('is-open', isOpen);
+    panel.firstElementChild?.toggleAttribute('inert', !isOpen);
+    button.querySelector('i')?.classList.toggle('rotate-180', isOpen);
+    if (isOpen) collapsedRecipeIds.delete(recipeId);
+    else collapsedRecipeIds.add(recipeId);
 }
 
 function toggleRecipeCategoryForm() {
@@ -2081,6 +2106,7 @@ function deleteRecipe(categoryId, recipeId) {
 function startRecipeEdit(recipeId) {
     activeRecipeEditId = recipeId;
     activeRecipePhotoRemoved = false;
+    collapsedRecipeIds.delete(recipeId);
     renderRecipes();
     document.getElementById(`edit-recipe-title-${recipeId}`)?.focus();
 }
