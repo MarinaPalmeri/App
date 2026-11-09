@@ -233,6 +233,82 @@ function initHomeDashboard() {
     renderHomeTasks();
 }
 
+function showHomeBackgroundStatus(message) {
+    const status = document.getElementById('home-background-status');
+    if (!status) return;
+    status.textContent = message;
+    status.classList.toggle('hidden', !message);
+}
+
+function openHomeBackgroundDatabase() {
+    return new Promise((resolve, reject) => {
+        if (!window.indexedDB) {
+            reject(new Error('Il salvataggio degli sfondi non è supportato da questo browser.'));
+            return;
+        }
+
+        const request = window.indexedDB.open('lifehub-settings', 1);
+        request.onupgradeneeded = () => {
+            const database = request.result;
+            if (!database.objectStoreNames.contains('preferences')) {
+                database.createObjectStore('preferences');
+            }
+        };
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(new Error('Impossibile aprire l’archivio degli sfondi.'));
+    });
+}
+
+async function loadHomeBackground() {
+    let database;
+    try {
+        database = await openHomeBackgroundDatabase();
+        const image = await new Promise((resolve, reject) => {
+            const transaction = database.transaction('preferences', 'readonly');
+            const request = transaction.objectStore('preferences').get('home-background');
+            request.onsuccess = () => resolve(request.result);
+            request.onerror = () => reject(new Error('Impossibile leggere lo sfondo salvato.'));
+            transaction.onabort = () => reject(new Error('Impossibile leggere lo sfondo salvato.'));
+        });
+        if (typeof image === 'string') {
+            document.getElementById('home-bg')?.style.setProperty('--home-background-image', `url("${image}")`);
+        }
+    } catch (error) {
+        showHomeBackgroundStatus(error.message || 'Impossibile caricare lo sfondo salvato.');
+    } finally {
+        database?.close();
+    }
+}
+
+async function handleHomeBackgroundChange(event) {
+    const input = event.target;
+    const file = input.files?.[0];
+    if (!file) return;
+
+    showHomeBackgroundStatus('');
+    let database;
+    try {
+        if (!file.type.startsWith('image/')) {
+            throw new Error('Scegli un file immagine valido.');
+        }
+        const image = await resizeImageFile(file);
+        database = await openHomeBackgroundDatabase();
+        await new Promise((resolve, reject) => {
+            const transaction = database.transaction('preferences', 'readwrite');
+            transaction.objectStore('preferences').put(image, 'home-background');
+            transaction.oncomplete = resolve;
+            transaction.onerror = () => reject(new Error('Non c’è spazio disponibile per salvare lo sfondo.'));
+            transaction.onabort = () => reject(new Error('Non è stato possibile salvare lo sfondo.'));
+        });
+        document.getElementById('home-bg')?.style.setProperty('--home-background-image', `url("${image}")`);
+    } catch (error) {
+        showHomeBackgroundStatus(error.message || 'Non è stato possibile cambiare lo sfondo.');
+    } finally {
+        database?.close();
+        input.value = '';
+    }
+}
+
 function getHomeImageStorageKey(slot) {
     return `lifehub_home_image_${slot}`;
 }
@@ -2832,6 +2908,8 @@ function switchTab(tabName) {
 function showNewSection(targetSection, tabName, homeBg) {
     const appContent = document.getElementById('app-content');
     if (appContent) appContent.classList.toggle('home-dashboard-active', tabName === 'home');
+    document.getElementById('home-background-controls')?.classList.toggle('hidden', tabName !== 'home');
+    if (tabName !== 'home') showHomeBackgroundStatus('');
 
     if (targetSection) {
         targetSection.classList.remove('hidden');
@@ -2890,6 +2968,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initTrashDates();
     initExams();
     initUniversitySchedule();
+    loadHomeBackground();
     renderGymCalendar();
     initWeather();
     initMoodTracker();

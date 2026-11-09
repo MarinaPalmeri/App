@@ -1024,7 +1024,40 @@
         }
 
         #home-bg {
-            background-image: url('wyxina-background-8653526.jpg') !important;
+            background-image: var(--home-background-image, url('wyxina-background-8653526.jpg')) !important;
+        }
+
+        #home-background-controls {
+            position: fixed;
+            z-index: 50;
+            top: calc(var(--sat) + 0.5rem);
+            right: 1rem;
+        }
+
+        #home-background-button {
+            display: flex;
+            width: 2.5rem;
+            height: 2.5rem;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(255, 248, 231, 0.35);
+            border-radius: 9999px;
+            background: rgba(24, 19, 18, 0.7);
+            color: #fff5e9;
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.25);
+        }
+
+        #home-background-status {
+            position: fixed;
+            z-index: 50;
+            top: calc(var(--sat) + 3.25rem);
+            right: 1rem;
+            max-width: min(18rem, calc(100vw - 2rem));
+            border-radius: 0.75rem;
+            background: rgba(24, 19, 18, 0.9);
+            padding: 0.5rem 0.75rem;
+            color: #fff5e9;
+            font-size: 0.75rem;
         }
 
         .bg-blur-overlay {
@@ -2021,13 +2054,17 @@
             gap: 0.4rem !important;
         }
 
+        #sec-home .home-tool-card:not(.home-tasks-card) > :not([hidden]) ~ :not([hidden]) {
+            margin-top: 0.4rem !important;
+        }
+
         #app-content #sec-home .home-meal-plan-button {
-            min-height: 4rem !important;
-            border-color: rgba(77, 93, 83, 0.25) !important;
-            background: #E1E5E0 !important;
-            color: #3D2B1F !important;
-            box-shadow: none !important;
-            transition: none !important;
+        min-height: 4rem !important;
+        border-color: rgba(77, 93, 83, 0.25) !important;
+        background: #E1E5E0 !important;
+        color: #3D2B1F !important;
+        box-shadow: none !important;
+        transition: none !important;
         }
 
         #app-content #sec-home .home-meal-plan-button:hover,
@@ -2046,10 +2083,26 @@
         }
 
         @media (max-width: 480px) {
+            #home-background-controls {
+                top: calc(var(--sat) + 2.5rem);
+            }
+
+            #home-background-button {
+                width: 1.75rem;
+                height: 1.75rem;
+                font-size: 0.9rem;
+            }
+
             #sec-home {
                 gap: 0.75rem;
-                padding-top: 3rem;
+                flex: 1 0 auto;
+                min-height: 100%;
+                padding-top: 1.5rem;
                 padding-bottom: 1rem;
+            }
+
+            #sec-home > :not([hidden]) ~ :not([hidden]) {
+                margin-top: 0 !important;
             }
 
             #sec-home > header h1 {
@@ -2057,17 +2110,199 @@
                 line-height: 1.1;
             }
 
-            #sec-home .home-datetime {
-                gap: 0.75rem;
+            #sec-home > header > p[aria-hidden="true"] {
+                display: none;
+            }
+
+            #sec-home > :not([hidden]) ~ .home-backup {
+                margin-top: auto !important;
+            }
+
+            #app-content #sec-home > header + div.grid {
+                margin-top: 0.5rem !important;
+            }
+
+            #sec-home .home-tool-card:not(.home-tasks-card) > div:first-child {
+                justify-content: center;
+            }
+
+            #sec-home .home-tool-card:not(.home-tasks-card) {
+                padding-top: 0.65rem !important;
+                padding-bottom: 0.65rem !important;
+            }
+
+            #sec-home .home-tool-card:not(.home-tasks-card) h2 {
+                font-size: 0.9rem !important;
+                line-height: 1.25;
+                text-align: center;
+                white-space: nowrap;
+            }
+
+            #app-content #sec-home .home-meal-plan-button {
+                min-height: 3.75rem !important;
+                height: 3.75rem !important;
+                padding: 0.3rem !important;
+                gap: 0.3rem !important;
+            }
+
+            #app-content #sec-home .home-meal-plan-button i {
+                font-size: 0.9rem;
+            }
+
+            #app-content #sec-home .home-meal-plan-button span {
+                font-size: 0.65rem;
+                line-height: 1.1;
+            }
+
+            #sec-home .home-weather {
+                padding: 0.75rem 0.6rem;
+            }
+
+            #sec-home .home-weather > * + * {
+                margin-top: 0.35rem;
+            }
+
+            #sec-home .home-weather > div:first-child {
+                align-items: center;
+                gap: 0.25rem;
+            }
+
+            #sec-home .home-weather > div:first-child p:first-child {
+                font-size: 0.72rem !important;
+                line-height: 1.15;
+                white-space: nowrap;
+            }
+
+            #sec-home .home-weather #weather-location {
+                margin-top: 0.15rem;
+                font-size: 0.68rem !important;
+                line-height: 1.15;
+            }
+
+            #sec-home .home-weather #weather-refresh {
+                width: 1.5rem;
+                height: 1.5rem;
+            }
+
+            #sec-home .home-weather #weather-icon {
+                font-size: 1.5rem;
+                line-height: 1;
+            }
+
+            #sec-home .home-weather #weather-temperature {
+                font-size: 1.2rem;
+                line-height: 1.2;
+            }
+
+            #sec-home .home-weather #weather-summary {
+                font-size: 0.68rem !important;
+                line-height: 1.15;
+            }
+
+            #sec-home .home-weather > div:last-child {
+                gap: 0.25rem;
+                padding-top: 0.25rem;
+            }
+
+            #sec-home .home-weather > div:last-child > div {
+                min-width: 0;
+            }
+
+            #sec-home .home-weather > div:last-child > div > p:first-child {
+                font-size: 0.56rem !important;
+                line-height: 1.15;
+                white-space: nowrap;
+            }
+
+            #sec-home .home-weather > div:last-child > div > p:last-child {
+                font-size: 0.65rem !important;
+                line-height: 1.15;
+                white-space: nowrap;
+            }
+
+            #sec-home .home-tasks-card {
                 padding: 0.5rem;
             }
 
-            #sec-home .home-datetime > div {
+            #sec-home .home-tasks-card > * + * {
+                margin-top: 0.4rem;
+            }
+
+            #sec-home .home-tasks-card .home-tool-icon {
+                width: 1.5rem;
+                height: 1.5rem;
+                font-size: 0.7rem;
+            }
+
+            #sec-home .home-tasks-card h2 {
+                font-size: 0.72rem;
+            }
+
+            #sec-home .home-tasks-card #home-task-count {
+                font-size: 0.65rem;
+            }
+
+            #sec-home .home-tasks-card form {
                 gap: 0.4rem;
+                align-items: center;
+            }
+
+            #sec-home .home-tasks-card #home-task-input {
+                box-sizing: border-box;
+                height: 2.25rem !important;
+                min-height: 2.25rem !important;
+                padding: 0.3rem;
+                font-size: 0.8rem !important;
+                line-height: 1.2;
+            }
+
+            #sec-home .home-tasks-card #home-task-input::placeholder {
+                font-size: 0.8rem !important;
+            }
+
+            #sec-home .home-tasks-card form button {
+                display: flex;
+                width: 2rem;
+                height: 2rem;
+                min-height: 2rem;
+                align-items: center;
+                justify-content: center;
+                padding: 0;
+            }
+
+            #sec-home .home-tasks-card form button i {
+                line-height: 1;
+            }
+
+            #sec-home .home-tasks-card #home-task-list > * + * {
+                margin-top: 0.2rem;
+            }
+
+            #sec-home .home-tasks-card #home-task-list .cozy-row {
+                padding: 0.25rem 0.4rem;
+            }
+
+            #sec-home .home-tasks-card #home-task-list label {
+                font-size: 0.62rem;
+            }
+
+            #sec-home .home-tasks-card #home-task-list > p {
+                padding-top: 0.125rem;
+                padding-bottom: 0.125rem;
+                font-size: 0.65rem;
+            }
+
+            #sec-home .home-datetime {
+                gap: 0.3rem;
+                padding: 0.35rem;
+            }
+
+            #sec-home .home-datetime > div {
+                gap: 0.2rem;
             }
 
             #sec-home .home-datetime > div:first-child {
-                flex-direction: column;
+                flex-direction: row;
                 align-items: center;
                 gap: 0.2rem;
             }
@@ -2075,18 +2310,19 @@
             #sec-home .home-datetime > div:first-child i {
                 flex-shrink: 0;
                 margin-top: 0;
+                font-size: 0.9rem !important;
             }
 
             #app-content #sec-home #current-date {
-                font-size: 0.8rem;
-                line-height: 1.25;
-                text-align: center;
-                text-wrap: balance;
+                font-size: 0.85rem !important;
+                line-height: 1.15 !important;
+                text-align: center !important;
+                white-space: nowrap !important;
             }
 
             #app-content #sec-home #current-time {
-                font-size: 1rem;
-                line-height: 1.25;
+                font-size: 0.85rem !important;
+                line-height: 1.15 !important;
             }
 
         }
@@ -2099,20 +2335,27 @@
     <div id="home-bg" class="bg-home-container">
         <div class="bg-blur-overlay"></div>
     </div>
+    <div id="home-background-controls">
+        <button id="home-background-button" type="button" aria-label="Cambia sfondo" title="Scegli una foto come sfondo" onclick="document.getElementById('home-background-input').click()">
+            <i class="fa-regular fa-image" aria-hidden="true"></i>
+        </button>
+        <input id="home-background-input" type="file" accept="image/*" class="hidden" aria-label="Scegli una foto come sfondo" onchange="handleHomeBackgroundChange(event)">
+    </div>
+    <p id="home-background-status" class="hidden" role="status" aria-live="polite"></p>
 
     <!-- Contenuto Principale -->
     <main id="app-content" class="px-5 flex-grow flex flex-col justify-center items-center overflow-y-auto no-scrollbar min-h-full z-10 w-full">
         
         <!-- SECTION 1: HOME -->
         <section id="sec-home" class="tab-section w-full max-w-2xl flex flex-col items-stretch pt-8 pb-5 space-y-3 hidden">
-            <header class="space-y-0.5">
+            <header class="space-y-0.5 pr-12">
                 <p class="text-[9px] uppercase tracking-[0.16em] text-[#e0a98b] font-bold">Il tuo spazio, il tuo ritmo</p>
                 <h1 id="greeting-text" class="text-2xl sm:text-3xl font-cloud font-bold text-[#f7f0eb] drop-shadow-md">Buongiorno, Marina! 🌲</h1>
                 <p class="text-xs text-[#c7b3a6]" aria-hidden="true">&nbsp;</p>
             </header>
 
             <div class="grid grid-cols-2 gap-2.5">
-                <div class="cozy-card min-w-0 rounded-xl p-3 text-left space-y-2">
+                <div class="home-weather cozy-card min-w-0 rounded-xl p-3 text-left space-y-2">
                     <div class="flex items-start justify-between gap-2">
                         <div class="min-w-0">
                             <p class="text-[9px] uppercase tracking-[0.1em] text-[#c7b3a6]">Meteo di oggi</p>
@@ -2149,19 +2392,17 @@
 
             <div class="grid grid-cols-2 md:grid-cols-3 gap-2.5">
                 <section class="cozy-card home-tool-card min-w-0 rounded-xl p-2.5 space-y-2">
-                    <div class="flex items-center gap-1.5">
-                        <span class="home-tool-icon w-7 h-7 shrink-0 rounded-lg bg-[#e0a98b]/15 text-[#e0a98b] flex items-center justify-center text-xs"><i class="fa-solid fa-utensils"></i></span>
+                    <div class="flex items-center justify-center">
                         <h2 class="font-cloud font-bold text-xs text-[#f3d5b5]">Alimentazione</h2>
                     </div>
-                    <button type="button" onclick="switchTab('alimentazione')" aria-label="Apri il piano alimentare" class="home-meal-plan-button flex min-h-16 w-full flex-col items-center justify-center gap-1 rounded-lg border">
+                    <button type="button" onclick="switchTab('alimentazione')" aria-label="Apri il piano" class="home-meal-plan-button flex min-h-16 w-full flex-col items-center justify-center gap-1 rounded-lg border">
                         <i class="fa-solid fa-calendar-week text-base"></i>
-                        <span class="text-[10px] font-semibold">Apri il piano alimentare</span>
+                        <span class="text-[10px] font-semibold">Apri il piano</span>
                     </button>
                 </section>
 
                 <section class="cozy-card home-tool-card min-w-0 rounded-xl p-2.5 space-y-2">
-                    <div class="flex items-center gap-1.5">
-                        <span class="home-tool-icon w-7 h-7 shrink-0 rounded-lg bg-[#e0a98b]/15 text-[#e0a98b] flex items-center justify-center text-xs"><i class="fa-solid fa-dumbbell"></i></span>
+                    <div class="flex items-center justify-center">
                         <h2 class="font-cloud font-bold text-xs text-[#f3d5b5]">Allenamento</h2>
                     </div>
                     <button type="button" onclick="switchTab('allenamento')" aria-label="Apri il programma di allenamento" class="home-meal-plan-button flex min-h-16 w-full flex-col items-center justify-center gap-1 rounded-lg border">
@@ -2174,7 +2415,7 @@
                     <div class="flex items-center justify-between gap-2">
                         <div class="flex min-w-0 items-center gap-1.5">
                             <span class="home-tool-icon w-8 h-8 shrink-0 rounded-lg bg-[#b5c99a]/15 text-[#b5c99a] flex items-center justify-center text-sm"><i class="fa-solid fa-list-check"></i></span>
-                            <h2 class="font-cloud font-bold text-sm text-[#f3d5b5]">Piccole cose 🌿</h2>
+                            <h2 class="font-cloud font-bold text-sm text-[#f3d5b5]">Obiettivi giornalieri 🌿</h2>
                         </div>
                         <span id="home-task-count" class="shrink-0 text-[11px] text-[#c7b3a6]">0/0</span>
                     </div>
@@ -2195,14 +2436,14 @@
                     <h2 class="home-space-heading font-cloud font-bold text-xs text-[#f3d5b5]">Apri il tuo spazio</h2>
                 </div>
                 <div class="grid grid-cols-3 gap-1.5">
-                    <button type="button" onclick="switchTab('gym')" class="cozy-card rounded-lg p-2 text-left transition-transform active:scale-95">
+                    <button type="button" onclick="switchTab('gym')" class="cozy-card flex flex-col items-center justify-center rounded-lg p-2 text-center transition-transform active:scale-95">
                         <i class="fa-solid fa-dumbbell text-sm text-[#b5c99a]"></i><span class="block mt-1 text-[10px] font-cloud font-bold text-[#f7f0eb]">Gym</span>
                     </button>
-                    <button type="button" onclick="switchTab('ricette')" class="cozy-card rounded-lg p-2 text-left transition-transform active:scale-95">
+                    <button type="button" onclick="switchTab('ricette')" class="cozy-card flex flex-col items-center justify-center rounded-lg p-2 text-center transition-transform active:scale-95">
                         <i class="fa-solid fa-utensils text-sm text-[#f3d5b5]"></i><span class="block mt-1 text-[10px] font-cloud font-bold text-[#f7f0eb]">Ricette</span>
                     </button>
-                    <button type="button" onclick="switchTab('monster')" class="cozy-card rounded-lg p-2 text-left transition-transform active:scale-95">
-                        <img src="Monster.png" alt="" class="mb-1 h-6 w-auto object-contain">
+                    <button type="button" onclick="switchTab('monster')" class="cozy-card flex flex-col items-center rounded-lg p-2 text-center transition-transform active:scale-95">
+                        <img src="Monster.png" alt="" class="mx-auto mb-1 h-6 w-auto object-contain">
                         <span class="block text-[10px] font-cloud font-bold text-[#f7f0eb]">Monster Energy</span>
                     </button>
                 </div>
