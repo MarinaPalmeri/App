@@ -56,7 +56,7 @@
             -webkit-touch-callout: none;
             font-family: 'Nunito', 'Quicksand', -apple-system, sans-serif;
             padding-top: var(--sat);
-            padding-bottom: calc(var(--sab) + 75px);
+            padding-bottom: 0;
             background:
                 radial-gradient(circle at top, rgba(214, 140, 95, 0.16), transparent 35%),
                 linear-gradient(180deg, var(--autumn-bg) 0%, #1a140f 100%);
@@ -770,9 +770,10 @@
         }
 
         #app-content {
-            scroll-behavior: smooth;
-            padding-bottom: calc(var(--app-bar-height) + var(--sab) + 1rem);
-            scroll-padding-bottom: calc(var(--app-bar-height) + var(--sab) + 1rem);
+            flex: 1 0 auto;
+            min-height: 0 !important;
+            overflow-y: visible !important;
+            padding-bottom: 0;
         }
 
         #app-content > .tab-section:not(#sec-home) {
@@ -846,6 +847,10 @@
         }
 
         nav.fixed {
+            position: relative !important;
+            inset: auto !important;
+            width: 100%;
+            flex: 0 0 auto;
             height: calc(var(--app-bar-height) + var(--sab)) !important;
             background: var(--app-bar-background);
             border-top: 1px solid rgba(238, 187, 154, 0.2);
