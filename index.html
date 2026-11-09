@@ -9,7 +9,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="LifeHub 🌲">
-    <meta name="theme-color" content="#002b29">
+    <meta name="theme-color" content="#000000">
     <link rel="icon" type="image/png" sizes="192x192" href="app-icon-192.png">
     <link rel="apple-touch-icon" href="apple-touch-icon.png">
     <link rel="manifest" href="manifest.webmanifest">
@@ -40,7 +40,6 @@
             --autumn-muted: #c9b49b;
             --autumn-line: rgba(233, 184, 152, 0.2);
             --app-bar-background: linear-gradient(180deg, #271d19, #171210);
-            --app-bar-height: 72px;
         }
 
         html,
@@ -154,6 +153,18 @@
             border-color: rgba(233, 184, 152, 0.2);
         }
 
+        .home-space-title-row::before,
+        .home-space-title-row::after {
+            content: "";
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(213, 221, 214, 0.55));
+        }
+
+        .home-space-title-row::after {
+            transform: scaleX(-1);
+        }
+
         .home-tool-card::before {
             content: "";
             position: absolute;
@@ -260,7 +271,7 @@
             color: rgba(201, 180, 155, 0.62);
         }
 
-        #app-content {
+        #app-content.home-dashboard-active {
             justify-content: flex-start;
         }
 
@@ -276,19 +287,20 @@
             padding: 0.5rem;
         }
 
-        nav.fixed {
-            background: var(--app-bar-background);
-            border-top-color: rgba(233, 184, 152, 0.22);
-            box-shadow: 0 -8px 24px rgba(11, 7, 6, 0.22);
-            backdrop-filter: blur(18px);
-            -webkit-backdrop-filter: blur(18px);
+        .tab-btn {
+            min-width: 3.8rem;
+            padding: 0.45rem 0.75rem;
+            border-radius: 1rem;
+            transition: color 180ms ease, background 180ms ease, transform 180ms ease;
         }
 
-        .tab-btn {
-            min-width: 48px;
-            padding: 5px 8px;
-            border-radius: 0.9rem;
-            transition: color 180ms ease, background 180ms ease, transform 180ms ease;
+        .tab-btn i {
+            font-size: 1.2rem;
+        }
+
+        .tab-btn span {
+            font-size: 0.76rem !important;
+            letter-spacing: 0.025em;
         }
 
         .tab-btn:hover {
@@ -697,19 +709,6 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        nav.fixed {
-            min-height: calc(4.4rem + var(--sab));
-        }
-
-        .tab-btn {
-            min-width: 3.5rem;
-            padding: 0.45rem 0.7rem;
-        }
-
-        .tab-btn span {
-            font-size: 0.75rem !important;
-        }
-
         #sec-spese > .cozy-card {
             max-width: 44rem;
             margin-left: auto;
@@ -761,13 +760,6 @@
             color: #fff5e9;
         }
 
-        body {
-            height: 100vh;
-            height: 100dvh;
-            min-height: 0 !important;
-            overflow: hidden;
-        }
-
         .bg-blur-overlay {
             background:
                 radial-gradient(ellipse at 15% 12%, rgba(212, 125, 79, 0.17), transparent 44%),
@@ -776,25 +768,34 @@
             -webkit-backdrop-filter: blur(16px) saturate(0.86);
         }
 
-        #app-content {
-            flex: 1 1 0%;
-            min-height: 0 !important;
-            overflow-x: hidden;
-            overflow-y: auto !important;
-            overscroll-behavior-y: contain;
-            -webkit-overflow-scrolling: touch;
-            padding-bottom: calc(var(--app-bar-height) + var(--sab) + 1rem);
-            scroll-padding-bottom: calc(var(--app-bar-height) + var(--sab) + 1rem);
-        }
-
         #app-content > .tab-section:not(#sec-home) {
             width: min(100%, 56rem);
             margin-left: auto;
             margin-right: auto;
         }
 
+        body.non-home-dashboard-active {
+            height: 100dvh;
+            min-height: 0;
+            overflow: hidden;
+            box-sizing: border-box;
+        }
+
+        #app-content.non-home-dashboard-active {
+            flex: 1 1 0%;
+            min-height: 0;
+            justify-content: flex-start;
+            overflow-y: auto;
+            padding-bottom: calc(98px + var(--sab) + 1rem);
+            box-sizing: border-box;
+        }
+
+        #app-content.non-home-dashboard-active > .tab-section:not(#sec-home) {
+            flex-shrink: 0;
+        }
+
         #sec-home {
-            padding-top: 2rem;
+            padding-top: 3.5rem;
             padding-bottom: 2rem;
             gap: 1rem;
         }
@@ -860,35 +861,16 @@
         nav.fixed {
             position: fixed !important;
             inset: auto 0 0 !important;
-            width: 100%;
-            flex: 0 0 auto;
-            box-sizing: border-box;
-            height: calc(var(--app-bar-height) + var(--sab)) !important;
-            min-height: calc(var(--app-bar-height) + var(--sab));
-            padding-bottom: var(--sab);
-            padding-left: max(0.5rem, env(safe-area-inset-left, 0px));
-            padding-right: max(0.5rem, env(safe-area-inset-right, 0px));
+            height: 98px !important;
             background: var(--app-bar-background);
             border-top: 1px solid rgba(238, 187, 154, 0.2);
-            box-shadow: 0 -10px 32px rgba(8, 5, 4, 0.28);
+            box-shadow: 0 -8px 24px rgba(11, 7, 6, 0.22);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
         }
 
-        .tab-btn {
-            flex: 1 1 0;
-            min-width: 0;
-            min-height: 44px;
-            padding: 0.35rem 0.2rem;
-            border-radius: 1rem;
-            white-space: nowrap;
-        }
-
-        .tab-btn i {
-            font-size: 1.2rem;
-        }
-
-        .tab-btn span {
-            font-size: 0.76rem !important;
-            letter-spacing: 0.025em;
+        nav.fixed .tab-btn {
+            translate: 0 -8px;
         }
 
         nav .tab-btn[class~="text-[#e8c2ca]"] {
@@ -1015,11 +997,6 @@
                 border-radius: 1.35rem;
             }
 
-            nav .tab-btn {
-                min-width: 3.2rem;
-                padding-left: 0.45rem;
-                padding-right: 0.45rem;
-            }
         }
 
         @media (prefers-reduced-motion: reduce) {
@@ -1223,7 +1200,7 @@
         }
 
         nav.fixed {
-            background: #af7943 !important;
+            background: #201f1d !important;
             background-image: none !important;
             color: #F0F0EB !important;
             border-color: rgba(227, 218, 201, 0.35) !important;
@@ -1489,8 +1466,14 @@
             background-color: rgba(77, 93, 83, 0.16) !important;
         }
 
-        nav .tab-btn[class~="text-[#e8c2ca]"] {
-            background: #4D5D53 !important;
+        nav.fixed .tab-btn[class~="text-[#e8c2ca]"] {
+            background: #c3d1b3 !important;
+            color: #1f1d19 !important;
+        }
+
+        nav.fixed .tab-btn[class~="text-[#e8c2ca]"] i,
+        nav.fixed .tab-btn[class~="text-[#e8c2ca]"] span {
+            color: #1f1d19 !important;
         }
 
         #app-content .tab-section h1,
@@ -1750,6 +1733,12 @@
         #sec-casa [class*="justify-between"][class*="p-3"] {
             background-color: #D5DDD6 !important;
             border-color: #AEB9B0 !important;
+        }
+
+        #sec-casa > .cozy-card {
+            width: min(100%, 42rem);
+            margin-inline: auto;
+            margin-top: 4.5rem;
         }
 
         #sec-casa .waste-badge {
@@ -2202,16 +2191,28 @@
                 gap: 0.75rem;
                 flex: 1 0 auto;
                 min-height: 100%;
-                padding-top: 1.5rem;
+                padding-top: 2rem;
                 padding-bottom: 1rem;
+            }
+
+            #sec-home > header {
+                margin-top: 0.25rem;
             }
 
             #sec-home > :not([hidden]) ~ :not([hidden]) {
                 margin-top: 0 !important;
             }
 
+            #sec-home > :not([hidden]) ~ .home-tools-grid {
+                margin-top: 0.5rem !important;
+            }
+
+            #sec-home .home-tasks-card {
+                margin-top: 0.5rem;
+            }
+
             #sec-home > header h1 {
-                font-size: clamp(1.3rem, 5.8vw, 1.5rem);
+                font-size: clamp(1.15rem, 5vw, 1.3rem);
                 line-height: 1.1;
             }
 
@@ -2220,7 +2221,7 @@
             }
 
             #sec-home > :not([hidden]) ~ .home-backup {
-                margin-top: auto !important;
+                margin-top: 0.75rem !important;
             }
 
             #app-content #sec-home > header + div.grid {
@@ -2533,7 +2534,7 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-2 md:grid-cols-3 gap-2.5">
+            <div class="home-tools-grid grid grid-cols-2 md:grid-cols-3 gap-2.5">
                 <section class="cozy-card home-tool-card min-w-0 rounded-xl p-2.5 space-y-2">
                     <div class="flex items-center justify-center">
                         <h2 class="font-cloud font-bold text-xs text-[#f3d5b5]">Alimentazione</h2>
@@ -2574,11 +2575,11 @@
                 </section>
             </div>
 
-            <section class="space-y-1.5">
-                <div class="flex items-center justify-between px-1">
-                    <h2 class="home-space-heading font-cloud font-bold text-xs text-[#f3d5b5]">Apri il tuo spazio</h2>
+            <section class="space-y-2">
+                <div class="home-space-title-row flex items-center justify-center gap-2 px-1">
+                    <h2 class="home-space-heading font-cloud text-sm font-bold tracking-wide text-[#f3d5b5]">Apri il tuo spazio</h2>
                 </div>
-                <div class="grid grid-cols-3 gap-1.5">
+                <div class="mt-2 grid grid-cols-3 gap-1.5">
                     <button type="button" onclick="switchTab('gym')" class="cozy-card flex flex-col items-center justify-center rounded-lg p-2 text-center transition-transform active:scale-95">
                         <i class="fa-solid fa-dumbbell text-sm text-[#b5c99a]"></i><span class="block mt-1 text-[10px] font-cloud font-bold text-[#f7f0eb]">Gym</span>
                     </button>
@@ -3052,7 +3053,7 @@
     </main>
 
     <!-- Navigation Bar In Basso -->
-    <nav aria-label="Navigazione principale" class="fixed bottom-0 left-0 right-0 bg-[#1c1817]/92 backdrop-blur-xl border-t border-[#e2b4bd]/15 flex justify-around items-center z-50" style="padding-bottom: var(--sab); height: calc(var(--app-bar-height) + var(--sab));">
+    <nav class="fixed bottom-0 left-0 right-0 bg-[#1c1817]/92 backdrop-blur-xl border-t border-[#e2b4bd]/15 flex justify-around items-center z-50">
         <button onclick="switchTab('home')" class="tab-btn flex flex-col items-center text-[#e8c2ca] transition-transform duration-200 active:scale-90" id="tab-home">
             <i class="fa-solid fa-house text-xl"></i>
             <span class="text-[10px] mt-1 font-medium font-cloud">Home</span>

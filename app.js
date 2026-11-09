@@ -2967,14 +2967,12 @@ function switchTab(tabName) {
     document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.classList.remove('text-[#e8c2ca]');
         btn.classList.add('text-[#9c8a80]');
-        btn.removeAttribute('aria-current');
     });
     
     const activeTab = document.getElementById(`tab-${tabName}`);
     if (activeTab) {
         activeTab.classList.remove('text-[#9c8a80]');
         activeTab.classList.add('text-[#e8c2ca]');
-        activeTab.setAttribute('aria-current', 'page');
     }
 
     const currentActiveSec = document.querySelector('main > section.active-section');
@@ -2995,10 +2993,9 @@ function switchTab(tabName) {
 
 function showNewSection(targetSection, tabName, homeBg) {
     const appContent = document.getElementById('app-content');
-    if (appContent) {
-        appContent.classList.toggle('home-dashboard-active', tabName === 'home');
-        appContent.scrollTop = 0;
-    }
+    if (appContent) appContent.classList.toggle('home-dashboard-active', tabName === 'home');
+    if (appContent) appContent.classList.toggle('non-home-dashboard-active', tabName !== 'home');
+    document.body.classList.toggle('non-home-dashboard-active', tabName !== 'home');
     document.getElementById('home-background-controls')?.classList.toggle('hidden', tabName !== 'home');
     if (tabName !== 'home') showHomeBackgroundStatus('');
 
