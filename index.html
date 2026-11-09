@@ -39,6 +39,8 @@
             --autumn-cream: #f8f0e7;
             --autumn-muted: #c9b49b;
             --autumn-line: rgba(233, 184, 152, 0.2);
+            --app-bar-background: linear-gradient(180deg, #271d19, #171210);
+            --app-bar-height: 72px;
         }
 
         html,
@@ -262,8 +264,20 @@
             justify-content: flex-start;
         }
 
+        #sec-home > header {
+            position: sticky;
+            top: 0;
+            z-index: 20;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            margin: -0.5rem -0.5rem 0;
+            padding: 0.5rem;
+        }
+
         nav.fixed {
-            background: linear-gradient(180deg, rgba(42, 33, 29, 0.96), rgba(27, 23, 22, 0.98));
+            background: var(--app-bar-background);
             border-top-color: rgba(233, 184, 152, 0.22);
             box-shadow: 0 -8px 24px rgba(11, 7, 6, 0.22);
             backdrop-filter: blur(18px);
@@ -757,6 +771,8 @@
 
         #app-content {
             scroll-behavior: smooth;
+            padding-bottom: calc(var(--app-bar-height) + var(--sab) + 1rem);
+            scroll-padding-bottom: calc(var(--app-bar-height) + var(--sab) + 1rem);
         }
 
         #app-content > .tab-section:not(#sec-home) {
@@ -777,7 +793,7 @@
             letter-spacing: -0.025em;
         }
 
-        #sec-home > header > p:first-child {
+        #sec-home > header > div > p:first-child {
             color: #e5a77f;
             letter-spacing: 0.18em;
         }
@@ -830,8 +846,8 @@
         }
 
         nav.fixed {
-            height: calc(72px + var(--sab)) !important;
-            background: linear-gradient(180deg, rgba(39, 29, 25, 0.96), rgba(23, 18, 16, 0.99));
+            height: calc(var(--app-bar-height) + var(--sab)) !important;
+            background: var(--app-bar-background);
             border-top: 1px solid rgba(238, 187, 154, 0.2);
             box-shadow: 0 -10px 32px rgba(8, 5, 4, 0.28);
         }
@@ -1019,19 +1035,32 @@
             color: #3D2B1F;
         }
 
-        body *:not(#home-bg) {
+        body *:not(#home-bg):not(#home-background-settings):not(#home-background-select) {
             background-image: none !important;
         }
 
         #home-bg {
-            background-image: var(--home-background-image, url('wyxina-background-8653526.jpg')) !important;
+            background-image: none !important;
+        }
+
+        #home-bg::before {
+            position: absolute;
+            inset: 0;
+            background-image: var(--home-background-image, url('wyxina-background-8653526.jpg'));
+            background-position: var(--home-background-position-x, 50%) var(--home-background-position-y, 50%);
+            background-size: cover;
+            content: "";
+            filter: brightness(var(--home-background-brightness, 1));
+            z-index: 0;
+        }
+
+        #home-bg .bg-blur-overlay {
+            z-index: 1;
         }
 
         #home-background-controls {
-            position: fixed;
-            z-index: 50;
-            top: calc(var(--sat) + 0.5rem);
-            right: 1rem;
+            position: relative;
+            flex: 0 0 auto;
         }
 
         #home-background-button {
@@ -1040,11 +1069,67 @@
             height: 2.5rem;
             align-items: center;
             justify-content: center;
-            border: 1px solid rgba(255, 248, 231, 0.35);
+            border: 1px solid rgba(233, 184, 152, 0.45);
             border-radius: 9999px;
-            background: rgba(24, 19, 18, 0.7);
+            background: transparent;
             color: #fff5e9;
-            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.25);
+            box-shadow: none;
+        }
+
+        #home-background-settings {
+            --background-settings-text: #e2ddd6;
+            --background-settings-muted: #c4bcb2;
+            --background-settings-line: rgba(226, 221, 214, 0.3);
+            position: absolute;
+            top: calc(100% + 0.5rem);
+            right: 0;
+            z-index: 30;
+            width: min(15rem, calc(100vw - 3rem));
+            border: 1px solid var(--background-settings-line);
+            border-radius: 0.9rem;
+            background-color: #1b1a19 !important;
+            background-image: none !important;
+            padding: 0.75rem;
+            color: var(--background-settings-text);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+        }
+
+        #app-content #sec-home #home-background-settings :where(*) {
+            color: var(--background-settings-text) !important;
+        }
+
+        #app-content #sec-home #home-background-settings label {
+            font-size: 0.75rem;
+        }
+
+        #app-content #sec-home #home-background-settings legend {
+            color: var(--background-settings-muted) !important;
+        }
+
+        #home-background-select {
+            width: 100%;
+            border: 1px solid var(--background-settings-line);
+            border-radius: 0.6rem;
+            background-color: rgba(226, 221, 214, 0.1) !important;
+            background-image: none !important;
+            padding: 0.5rem;
+            font-size: 0.75rem;
+        }
+
+        #home-background-settings input[type="range"] {
+            min-width: 0;
+            flex: 1;
+            accent-color: #c4bcb2;
+            color-scheme: dark;
+        }
+
+        #app-content #sec-home #home-background-settings button {
+            color: var(--background-settings-text) !important;
+        }
+
+        #app-content #sec-home #home-background-button,
+        #app-content #sec-home #home-background-button i {
+            color: #fff5e9 !important;
         }
 
         #home-background-status {
@@ -1062,8 +1147,8 @@
 
         .bg-blur-overlay {
             background: transparent !important;
-            backdrop-filter: blur(2px);
-            -webkit-backdrop-filter: blur(2px);
+            backdrop-filter: blur(var(--home-background-blur, 2px));
+            -webkit-backdrop-filter: blur(var(--home-background-blur, 2px));
         }
 
         #app-content {
@@ -1264,7 +1349,7 @@
         }
 
         #current-date,
-        #sec-home > header > p:first-child {
+        #sec-home > header > div > p:first-child {
             color: #F0F0EB !important;
         }
 
@@ -2083,10 +2168,6 @@
         }
 
         @media (max-width: 480px) {
-            #home-background-controls {
-                top: calc(var(--sat) + 2.5rem);
-            }
-
             #home-background-button {
                 width: 1.75rem;
                 height: 1.75rem;
@@ -2110,7 +2191,7 @@
                 line-height: 1.1;
             }
 
-            #sec-home > header > p[aria-hidden="true"] {
+            #sec-home > header > div > p[aria-hidden="true"] {
                 display: none;
             }
 
@@ -2335,12 +2416,6 @@
     <div id="home-bg" class="bg-home-container">
         <div class="bg-blur-overlay"></div>
     </div>
-    <div id="home-background-controls">
-        <button id="home-background-button" type="button" aria-label="Cambia sfondo" title="Scegli una foto come sfondo" onclick="document.getElementById('home-background-input').click()">
-            <i class="fa-regular fa-image" aria-hidden="true"></i>
-        </button>
-        <input id="home-background-input" type="file" accept="image/*" class="hidden" aria-label="Scegli una foto come sfondo" onchange="handleHomeBackgroundChange(event)">
-    </div>
     <p id="home-background-status" class="hidden" role="status" aria-live="polite"></p>
 
     <!-- Contenuto Principale -->
@@ -2348,10 +2423,54 @@
         
         <!-- SECTION 1: HOME -->
         <section id="sec-home" class="tab-section w-full max-w-2xl flex flex-col items-stretch pt-8 pb-5 space-y-3 hidden">
-            <header class="space-y-0.5 pr-12">
-                <p class="text-[9px] uppercase tracking-[0.16em] text-[#e0a98b] font-bold">Il tuo spazio, il tuo ritmo</p>
-                <h1 id="greeting-text" class="text-2xl sm:text-3xl font-cloud font-bold text-[#f7f0eb] drop-shadow-md">Buongiorno, Marina! 🌲</h1>
-                <p class="text-xs text-[#c7b3a6]" aria-hidden="true">&nbsp;</p>
+            <header>
+                <div class="min-w-0 space-y-0.5">
+                    <p class="text-[9px] uppercase tracking-[0.16em] text-[#e0a98b] font-bold">Il tuo spazio, il tuo ritmo</p>
+                    <h1 id="greeting-text" class="text-2xl sm:text-3xl font-cloud font-bold text-[#f7f0eb] drop-shadow-md">Buongiorno, Marina! 🌲</h1>
+                    <p class="text-xs text-[#c7b3a6]" aria-hidden="true">&nbsp;</p>
+                </div>
+                <div id="home-background-controls">
+                    <button id="home-background-button" type="button" aria-label="Impostazioni sfondo" aria-expanded="false" aria-controls="home-background-settings" title="Cambia immagine e sfocatura" onclick="toggleHomeBackgroundSettings()">
+                        <i class="fa-regular fa-image" aria-hidden="true"></i>
+                    </button>
+                    <div id="home-background-settings" class="hidden">
+                        <button id="home-background-select" type="button" onclick="document.getElementById('home-background-input').click()">
+                            <i class="fa-regular fa-image mr-2" aria-hidden="true"></i>Scegli immagine
+                        </button>
+                        <label for="home-background-blur" class="mt-3 block">
+                            <span class="text-[9px] font-bold uppercase tracking-[0.12em]">Sfocatura</span>
+                            <span class="mt-1 flex items-center gap-2">
+                                <input id="home-background-blur" type="range" min="0" max="20" step="1" value="2" aria-label="Regola la sfocatura dello sfondo" oninput="updateHomeBackgroundBlur(event)" onchange="saveHomeBackgroundSetting(event, 'home-background-blur')">
+                                <output id="home-background-blur-value" for="home-background-blur">2 px</output>
+                            </span>
+                        </label>
+                        <label for="home-background-brightness" class="mt-3 block">
+                            <span class="text-[9px] font-bold uppercase tracking-[0.12em]">Luminosità</span>
+                            <span class="mt-1 flex items-center gap-2">
+                                <input id="home-background-brightness" type="range" min="50" max="150" step="5" value="100" aria-label="Regola la luminosità dello sfondo" oninput="updateHomeBackgroundBrightness(event)" onchange="saveHomeBackgroundSetting(event, 'home-background-brightness')">
+                                <output id="home-background-brightness-value" for="home-background-brightness">100%</output>
+                            </span>
+                        </label>
+                        <fieldset class="mt-3">
+                            <legend class="text-[9px] font-bold uppercase tracking-[0.12em]">Posizione</legend>
+                            <label for="home-background-position-x" class="mt-1 block">
+                                <span class="text-[10px]">Orizzontale</span>
+                                <span class="flex items-center gap-2">
+                                    <input id="home-background-position-x" type="range" min="0" max="100" step="5" value="50" aria-label="Posizione orizzontale dello sfondo" oninput="updateHomeBackgroundPosition(event)" onchange="saveHomeBackgroundSetting(event, 'home-background-position-x')">
+                                    <output id="home-background-position-x-value" for="home-background-position-x">50%</output>
+                                </span>
+                            </label>
+                            <label for="home-background-position-y" class="mt-2 block">
+                                <span class="text-[10px]">Verticale</span>
+                                <span class="flex items-center gap-2">
+                                    <input id="home-background-position-y" type="range" min="0" max="100" step="5" value="50" aria-label="Posizione verticale dello sfondo" oninput="updateHomeBackgroundPosition(event)" onchange="saveHomeBackgroundSetting(event, 'home-background-position-y')">
+                                    <output id="home-background-position-y-value" for="home-background-position-y">50%</output>
+                                </span>
+                            </label>
+                        </fieldset>
+                    </div>
+                    <input id="home-background-input" type="file" accept="image/*" class="hidden" aria-label="Scegli una foto come sfondo" onchange="handleHomeBackgroundChange(event)">
+                </div>
             </header>
 
             <div class="grid grid-cols-2 gap-2.5">

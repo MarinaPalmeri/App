@@ -240,6 +240,62 @@ function showHomeBackgroundStatus(message) {
     status.classList.toggle('hidden', !message);
 }
 
+function toggleHomeBackgroundSettings() {
+    const button = document.getElementById('home-background-button');
+    const settings = document.getElementById('home-background-settings');
+    if (!button || !settings) return;
+    const isExpanded = button.getAttribute('aria-expanded') === 'true';
+    button.setAttribute('aria-expanded', String(!isExpanded));
+    settings.classList.toggle('hidden', isExpanded);
+}
+
+function updateHomeBackgroundBlur(event) {
+    const slider = event.target;
+    const blur = Number(slider.value);
+    if (!Number.isFinite(blur) || blur < 0 || blur > 20) return;
+    document.getElementById('home-bg')?.style.setProperty('--home-background-blur', `${blur}px`);
+    const output = document.getElementById('home-background-blur-value');
+    if (output) output.value = `${blur} px`;
+}
+
+function updateHomeBackgroundBrightness(event) {
+    const brightness = Number(event.target.value);
+    if (!Number.isFinite(brightness) || brightness < 50 || brightness > 150) return;
+    document.getElementById('home-bg')?.style.setProperty('--home-background-brightness', String(brightness / 100));
+    const output = document.getElementById('home-background-brightness-value');
+    if (output) output.value = `${brightness}%`;
+}
+
+function updateHomeBackgroundPosition(event) {
+    const position = Number(event.target.value);
+    if (!Number.isFinite(position) || position < 0 || position > 100) return;
+    const axis = event.target.id.endsWith('-x') ? 'x' : 'y';
+    document.getElementById('home-bg')?.style.setProperty(`--home-background-position-${axis}`, `${position}%`);
+    const output = document.getElementById(`home-background-position-${axis}-value`);
+    if (output) output.value = `${position}%`;
+}
+
+async function saveHomeBackgroundSetting(event, key) {
+    const value = Number(event.target.value);
+    if (!Number.isFinite(value)) return;
+    let database;
+    try {
+        database = await openHomeBackgroundDatabase();
+        await new Promise((resolve, reject) => {
+            const transaction = database.transaction('preferences', 'readwrite');
+            transaction.objectStore('preferences').put(value, key);
+            transaction.oncomplete = resolve;
+            transaction.onerror = () => reject(new Error('Non c’è spazio disponibile per salvare le impostazioni dello sfondo.'));
+            transaction.onabort = () => reject(new Error('Non è stato possibile salvare le impostazioni dello sfondo.'));
+        });
+        showHomeBackgroundStatus('');
+    } catch (error) {
+        showHomeBackgroundStatus(error.message || 'Non è stato possibile salvare le impostazioni dello sfondo.');
+    } finally {
+        database?.close();
+    }
+}
+
 function openHomeBackgroundDatabase() {
     return new Promise((resolve, reject) => {
         if (!window.indexedDB) {
@@ -263,16 +319,46 @@ async function loadHomeBackground() {
     let database;
     try {
         database = await openHomeBackgroundDatabase();
-        const image = await new Promise((resolve, reject) => {
+        const preferences = await new Promise((resolve, reject) => {
             const transaction = database.transaction('preferences', 'readonly');
-            const request = transaction.objectStore('preferences').get('home-background');
-            request.onsuccess = () => resolve(request.result);
-            request.onerror = () => reject(new Error('Impossibile leggere lo sfondo salvato.'));
+            const store = transaction.objectStore('preferences');
+            const keys = [
+                'home-background',
+                'home-background-blur',
+                'home-background-brightness',
+                'home-background-position-x',
+                'home-background-position-y'
+            ];
+            const result = {};
+            let completedRequests = 0;
+            keys.forEach(key => {
+                const request = store.get(key);
+                request.onsuccess = () => {
+                    result[key] = request.result;
+                    completedRequests += 1;
+                    if (completedRequests === keys.length) resolve(result);
+                };
+                request.onerror = () => reject(new Error('Impossibile leggere le impostazioni dello sfondo.'));
+            });
             transaction.onabort = () => reject(new Error('Impossibile leggere lo sfondo salvato.'));
         });
-        if (typeof image === 'string') {
-            document.getElementById('home-bg')?.style.setProperty('--home-background-image', `url("${image}")`);
+        if (typeof preferences['home-background'] === 'string') {
+            document.getElementById('home-bg')?.style.setProperty('--home-background-image', `url("${preferences['home-background']}")`);
         }
+        const settings = [
+            { key: 'home-background-blur', min: 0, max: 20, update: updateHomeBackgroundBlur },
+            { key: 'home-background-brightness', min: 50, max: 150, update: updateHomeBackgroundBrightness },
+            { key: 'home-background-position-x', min: 0, max: 100, update: updateHomeBackgroundPosition },
+            { key: 'home-background-position-y', min: 0, max: 100, update: updateHomeBackgroundPosition }
+        ];
+        settings.forEach(({ key, min, max, update }) => {
+            const value = preferences[key];
+            const slider = document.getElementById(key);
+            if (slider && Number.isFinite(value) && value >= min && value <= max) {
+                slider.value = String(value);
+                update({ target: slider });
+            }
+        });
     } catch (error) {
         showHomeBackgroundStatus(error.message || 'Impossibile caricare lo sfondo salvato.');
     } finally {
