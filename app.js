@@ -468,12 +468,252 @@ function removeHomeImage(slot) {
     }
 }
 
+const weightStorageKey = 'lifehub_weight_history';
+let weightEntries = null;
+let weightEditingDate = null;
+
+function getLocalDateKey(date = new Date()) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
+
+function isValidWeightDate(date) {
+    if (typeof date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(date)) return false;
+    const [year, month, day] = date.split('-').map(Number);
+    const parsedDate = new Date(Date.UTC(year, month - 1, day));
+    return parsedDate.getUTCFullYear() === year
+        && parsedDate.getUTCMonth() === month - 1
+        && parsedDate.getUTCDate() === day;
+}
+
+function showWeightTrackerStatus(message) {
+    const status = document.getElementById('weight-tracker-status');
+    if (!status) return;
+    status.textContent = message;
+    status.classList.toggle('hidden', !message);
+}
+
+function loadWeightEntries() {
+    try {
+        const saved = localStorage.getItem(weightStorageKey);
+        if (!saved) return [];
+        const entries = JSON.parse(saved);
+        if (!Array.isArray(entries) || entries.some(entry =>
+            !entry
+            || !isValidWeightDate(entry.date)
+            || !Number.isFinite(entry.kg)
+            || entry.kg <= 0
+            || entry.kg > 999.9
+        )) {
+            throw new Error('Dati dello storico del peso non validi.');
+        }
+        return [...entries].sort((first, second) => first.date.localeCompare(second.date));
+    } catch (error) {
+        showWeightTrackerStatus(error.message || 'Impossibile caricare lo storico del peso.');
+        return [];
+    }
+}
+
+function saveWeightEntries(entries) {
+    try {
+        localStorage.setItem(weightStorageKey, JSON.stringify(entries));
+        showWeightTrackerStatus('');
+        return true;
+    } catch (error) {
+        showWeightTrackerStatus('Impossibile salvare le misurazioni. Controlla lo spazio disponibile.');
+        return false;
+    }
+}
+
+function initWeightTracker() {
+    if (!weightEntries) weightEntries = loadWeightEntries();
+    const dateInput = document.getElementById('weight-entry-date');
+    if (dateInput) {
+        dateInput.max = getLocalDateKey();
+        if (!dateInput.value) dateInput.value = getLocalDateKey();
+    }
+    renderWeightTracker();
+}
+
+function cancelWeightEdit() {
+    weightEditingDate = null;
+    document.getElementById('weight-entry-form')?.reset();
+    const dateInput = document.getElementById('weight-entry-date');
+    if (dateInput) dateInput.value = getLocalDateKey();
+    const submitButton = document.getElementById('weight-entry-submit');
+    if (submitButton) submitButton.innerHTML = '<i class="fa-solid fa-plus mr-1" aria-hidden="true"></i> Salva';
+    document.getElementById('weight-entry-cancel')?.classList.add('hidden');
+}
+
+function saveWeightEntry(event) {
+    event.preventDefault();
+    const dateInput = document.getElementById('weight-entry-date');
+    const kgInput = document.getElementById('weight-entry-kg');
+    const date = dateInput?.value;
+    const kg = Number(kgInput?.value);
+    if (!dateInput || !kgInput || !isValidWeightDate(date) || date > getLocalDateKey() || !Number.isFinite(kg) || kg < 0.1 || kg > 999.9) {
+        showWeightTrackerStatus('Inserisci una data valida e un peso compreso tra 0,1 e 999,9 kg.');
+        return;
+    }
+
+    if (!weightEntries) weightEntries = loadWeightEntries();
+    const updatedEntries = weightEntries.filter(entry => entry.date !== date && entry.date !== weightEditingDate);
+    updatedEntries.push({ date, kg });
+    updatedEntries.sort((first, second) => first.date.localeCompare(second.date));
+    if (!saveWeightEntries(updatedEntries)) return;
+
+    weightEntries = updatedEntries;
+    cancelWeightEdit();
+    renderWeightTracker();
+}
+
+function editWeightEntry(date) {
+    const entry = weightEntries?.find(item => item.date === date);
+    if (!entry) return;
+    weightEditingDate = date;
+    document.getElementById('weight-entry-date').value = entry.date;
+    document.getElementById('weight-entry-kg').value = entry.kg;
+    document.getElementById('weight-entry-submit').innerHTML = '<i class="fa-solid fa-check mr-1" aria-hidden="true"></i> Aggiorna';
+    document.getElementById('weight-entry-cancel').classList.remove('hidden');
+    document.getElementById('weight-entry-kg').focus();
+}
+
+function deleteWeightEntry(date) {
+    const entry = weightEntries?.find(item => item.date === date);
+    if (!entry || !window.confirm(`Vuoi eliminare la misurazione del ${new Date(`${date}T00:00:00`).toLocaleDateString('it-IT')}?`)) return;
+    const updatedEntries = weightEntries.filter(item => item.date !== date);
+    if (!saveWeightEntries(updatedEntries)) return;
+    weightEntries = updatedEntries;
+    if (weightEditingDate === date) cancelWeightEdit();
+    renderWeightTracker();
+}
+
+function createWeightChartElement(tag, attributes = {}) {
+    const element = document.createElementNS('http://www.w3.org/2000/svg', tag);
+    Object.entries(attributes).forEach(([name, value]) => element.setAttribute(name, value));
+    return element;
+}
+
+function renderWeightChart(entries) {
+    const chart = document.getElementById('weight-chart');
+    const emptyMessage = document.getElementById('weight-chart-empty');
+    if (!chart || !emptyMessage) return;
+    chart.replaceChildren();
+    if (!entries.length) {
+        chart.classList.add('hidden');
+        emptyMessage.classList.remove('hidden');
+        return;
+    }
+    chart.classList.remove('hidden');
+    emptyMessage.classList.add('hidden');
+
+    const width = 420;
+    const height = 420;
+    const margins = { top: 34, right: 28, bottom: 70, left: 78 };
+    const plotWidth = width - margins.left - margins.right;
+    const plotHeight = height - margins.top - margins.bottom;
+    const firstDate = new Date(`${entries[0].date}T00:00:00`);
+    const lastDate = new Date(`${entries[entries.length - 1].date}T00:00:00`);
+    const dateSpan = lastDate.getTime() - firstDate.getTime();
+    const lowerWeight = 60;
+    const upperWeight = 90;
+    const xForDate = date => margins.left + (dateSpan ? (new Date(`${date}T00:00:00`).getTime() - firstDate.getTime()) / dateSpan * plotWidth : plotWidth / 2);
+    const yForWeight = kg => margins.top + (upperWeight - kg) / (upperWeight - lowerWeight) * plotHeight;
+
+    for (let value = upperWeight; value >= lowerWeight; value -= 5) {
+        const y = yForWeight(value);
+        chart.append(
+            createWeightChartElement('line', { x1: margins.left, y1: y, x2: width - margins.right, y2: y, stroke: '#454545', 'stroke-opacity': 0.55, 'stroke-width': 1.5, 'stroke-dasharray': '6 5' }),
+            createWeightChartElement('text', { x: 4, y: y + 4, fill: '#000000', 'font-size': 12, 'text-anchor': 'start' })
+        );
+        chart.lastElementChild.textContent = `${value.toLocaleString('it-IT', { maximumFractionDigits: 1 })} kg`;
+    }
+
+    const dateTicks = [...new Set([0, Math.floor((entries.length - 1) / 2), entries.length - 1])].map(index => entries[index]);
+    dateTicks.forEach(entry => {
+        const text = createWeightChartElement('text', { x: xForDate(entry.date), y: height - 40, fill: '#000000', 'font-size': 15, 'text-anchor': 'middle' });
+        text.textContent = new Date(`${entry.date}T00:00:00`).toLocaleDateString('it-IT', { day: 'numeric', month: 'short' });
+        chart.append(text);
+    });
+
+    const points = entries.map(entry => `${xForDate(entry.date)},${yForWeight(entry.kg)}`);
+    chart.append(createWeightChartElement('polyline', {
+        points: points.join(' '),
+        fill: 'none',
+        stroke: '#8fa58a',
+        'stroke-width': 4,
+        'stroke-linecap': 'round',
+        'stroke-linejoin': 'round'
+    }));
+    entries.forEach(entry => {
+        const point = createWeightChartElement('circle', {
+            cx: xForDate(entry.date),
+            cy: yForWeight(entry.kg),
+            r: 5,
+            fill: '#000000'
+        });
+        point.append(createWeightChartElement('title'));
+        point.firstElementChild.textContent = `${new Date(`${entry.date}T00:00:00`).toLocaleDateString('it-IT')}: ${entry.kg.toLocaleString('it-IT', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} kg`;
+        chart.append(point);
+    });
+}
+
+function renderWeightTracker() {
+    const list = document.getElementById('weight-history-list');
+    const emptyMessage = document.getElementById('weight-history-empty');
+    if (!list || !emptyMessage || !weightEntries) return;
+
+    const chartEmptyMessage = document.getElementById('weight-chart-empty');
+    if (chartEmptyMessage) {
+        chartEmptyMessage.textContent = 'Aggiungi una misurazione per vedere il grafico.';
+    }
+    renderWeightChart(weightEntries);
+
+    list.replaceChildren();
+    emptyMessage.classList.toggle('hidden', weightEntries.length > 0);
+    [...weightEntries].reverse().forEach(entry => {
+        const item = document.createElement('li');
+        item.className = 'weight-history-entry flex items-center justify-between gap-3 rounded-xl border border-[#e2b4bd]/15 bg-[#1c1817]/30 p-3';
+        const detail = document.createElement('div');
+        detail.className = 'min-w-0';
+        const date = document.createElement('p');
+        date.className = 'text-xs text-[#c7b3a6]';
+        date.textContent = new Date(`${entry.date}T00:00:00`).toLocaleDateString('it-IT', { weekday: 'short', day: 'numeric', month: 'long', year: 'numeric' });
+        const value = document.createElement('p');
+        value.className = 'font-cloud text-base font-bold text-[#f3d5b5]';
+        value.textContent = `${entry.kg.toLocaleString('it-IT', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} kg`;
+        detail.append(date, value);
+
+        const actions = document.createElement('div');
+        actions.className = 'flex shrink-0 gap-1';
+        const editButton = document.createElement('button');
+        editButton.type = 'button';
+        editButton.className = 'flex h-9 w-9 items-center justify-center rounded-full bg-[#e0a98b]/10 text-[#e0a98b] active:scale-95';
+        editButton.setAttribute('aria-label', `Modifica misurazione del ${date.textContent}`);
+        editButton.innerHTML = '<i class="fa-solid fa-pen" aria-hidden="true"></i>';
+        editButton.addEventListener('click', () => editWeightEntry(entry.date));
+        const deleteButton = document.createElement('button');
+        deleteButton.type = 'button';
+        deleteButton.className = 'flex h-9 w-9 items-center justify-center rounded-full bg-[#e2b4bd]/10 text-[#e8c2ca] active:scale-95';
+        deleteButton.setAttribute('aria-label', `Elimina misurazione del ${date.textContent}`);
+        deleteButton.innerHTML = '<i class="fa-solid fa-trash-can" aria-hidden="true"></i>';
+        deleteButton.addEventListener('click', () => deleteWeightEntry(entry.date));
+        actions.append(editButton, deleteButton);
+        item.append(detail, actions);
+        list.append(item);
+    });
+}
+
 const mealPlanDays = ['Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato', 'Domenica'];
 const mealPlanStorageKey = 'lifehub_meal_plan';
 let mealPlanState = null;
 const workoutDays = ['Lower 1', 'Upper 1', 'Lower 2', 'Upper 2'];
 const workoutPlanStorageKey = 'lifehub_workout_plan';
 let workoutPlanState = null;
+let workoutZoomPlaceholder = null;
+let workoutZoomTrigger = null;
 
 function removeWorkoutBullets(value) {
     return value.split('\n').map(line => line.replace(/^\s*•\s?/, '')).join('\n');
@@ -481,6 +721,36 @@ function removeWorkoutBullets(value) {
 
 function workoutLines(value) {
     return removeWorkoutBullets(value).split('\n');
+}
+
+function openWorkoutQuadrant(quadrant, trigger) {
+    const modal = document.getElementById('workout-zoom-modal');
+    const content = document.getElementById('workout-zoom-content');
+    if (!modal || !content || workoutZoomPlaceholder) return;
+
+    workoutZoomPlaceholder = document.createComment('workout-quadrant-placeholder');
+    quadrant.before(workoutZoomPlaceholder);
+    workoutZoomTrigger = trigger;
+    quadrant.classList.add('workout-quadrant-expanded');
+    content.append(quadrant);
+    modal.setAttribute('aria-label', `${quadrant.querySelector('h3')?.textContent || 'Allenamento'} ingrandito`);
+    modal.classList.remove('hidden');
+    modal.style.display = 'flex';
+    quadrant.focus();
+}
+
+function closeWorkoutZoom() {
+    const modal = document.getElementById('workout-zoom-modal');
+    const quadrant = document.querySelector('#workout-zoom-content .workout-quadrant-expanded');
+    if (!modal || !workoutZoomPlaceholder || !quadrant) return;
+
+    quadrant.classList.remove('workout-quadrant-expanded');
+    workoutZoomPlaceholder.replaceWith(quadrant);
+    workoutZoomPlaceholder = null;
+    modal.style.display = 'none';
+    modal.classList.add('hidden');
+    workoutZoomTrigger?.focus();
+    workoutZoomTrigger = null;
 }
 
 function initWorkoutPlanner() {
@@ -538,10 +808,23 @@ function initWorkoutPlanner() {
         workoutDays.forEach(day => {
             const quadrant = document.createElement('section');
             quadrant.className = 'workout-quadrant min-w-0 space-y-1.5 rounded-xl p-2 sm:space-y-2 sm:p-3';
+            quadrant.tabIndex = -1;
 
             const heading = document.createElement('h3');
             heading.className = 'text-sm font-semibold';
             heading.textContent = day;
+
+            const expandButton = document.createElement('button');
+            expandButton.type = 'button';
+            expandButton.className = 'workout-expand-button flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[#4D5D53] transition-colors hover:bg-[#4D5D53]/10 active:scale-95';
+            expandButton.setAttribute('aria-label', `Ingrandisci ${day}`);
+            expandButton.title = `Ingrandisci ${day}`;
+            expandButton.innerHTML = '<i class="fa-solid fa-up-right-and-down-left-from-center text-[10px]" aria-hidden="true"></i>';
+            expandButton.addEventListener('click', () => openWorkoutQuadrant(quadrant, expandButton));
+
+            const headingRow = document.createElement('div');
+            headingRow.className = 'flex items-center justify-between gap-1';
+            headingRow.append(heading, expandButton);
 
             const exerciseArea = document.createElement('div');
             exerciseArea.className = 'workout-exercise-area workout-split-fields cozy-input overflow-hidden rounded-lg';
@@ -550,7 +833,12 @@ function initWorkoutPlanner() {
             exerciseArea.append(rows);
             renderWorkoutRows(day, rows);
 
-            quadrant.append(heading, exerciseArea);
+            quadrant.classList.add('cursor-zoom-in');
+            quadrant.addEventListener('click', event => {
+                if (event.target.closest('input, button, textarea, select, a')) return;
+                openWorkoutQuadrant(quadrant, expandButton);
+            });
+            quadrant.append(headingRow, exerciseArea);
             panels.append(quadrant);
         });
     } else {
@@ -2962,6 +3250,8 @@ async function addRecipe(event, categoryId) {
 
 // GESTIONE CAMBIO TAB
 function switchTab(tabName) {
+    closeWorkoutZoom();
+    if (tabName === 'allenamento') tabName = 'gym';
     const homeBg = document.getElementById('home-bg');
     
     document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -3013,7 +3303,10 @@ function showNewSection(targetSection, tabName, homeBg) {
         initHomeDashboard();
     } else if (tabName === 'alimentazione') {
         initMealPlanner();
-    } else if (tabName === 'allenamento') {
+    } else if (tabName === 'peso') {
+        initWeightTracker();
+    } else if (tabName === 'gym') {
+        renderGymCalendar();
         initWorkoutPlanner();
     } else {
         if(tabName === 'diario') {
@@ -3023,9 +3316,6 @@ function showNewSection(targetSection, tabName, homeBg) {
         }
         else if(tabName === 'spese') {
             renderShoppingList();
-        }
-        else if(tabName === 'gym') {
-            renderGymCalendar();
         }
         else if(tabName === 'ricette') {
             renderRecipes();

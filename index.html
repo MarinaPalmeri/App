@@ -1811,7 +1811,7 @@
             outline-offset: 1px;
         }
 
-        #sec-gym > .cozy-card > .flex.items-center.justify-between button {
+        #sec-gym details .flex.items-center.justify-between button {
             background-color: #D5DDD6 !important;
             border-color: #AEB9B0 !important;
             color: #3D2B1F !important;
@@ -2035,6 +2035,39 @@
             font-size: 0.6875rem !important;
         }
 
+        #sec-peso #weight-entry-form > label {
+            min-width: 0;
+        }
+
+        #sec-peso #weight-entry-form input {
+            box-sizing: border-box !important;
+            width: 100% !important;
+            min-width: 0 !important;
+            max-width: 100% !important;
+        }
+
+        #sec-peso #weight-entry-date {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: min(100%, 16rem) !important;
+            height: 2.9rem !important;
+            min-height: 2.9rem !important;
+            padding: 0 0.5rem !important;
+            font-size: 1rem !important;
+            text-align: center;
+            appearance: none;
+        }
+
+        #sec-peso #weight-entry-date::-webkit-date-and-time-value {
+            text-align: center;
+        }
+
+        #sec-peso #weight-history-list .weight-history-entry {
+            background: #ced6ce !important;
+            background-image: none !important;
+        }
+
         #sec-alimentazione .meal-day-tab {
             min-width: 0;
             border: 1px solid rgba(99, 81, 71, 0.18);
@@ -2049,7 +2082,7 @@
             color: #fff !important;
         }
 
-        #sec-allenamento .workout-quadrant {
+        #sec-gym .workout-quadrant {
             display: flex;
             min-height: 16rem;
             flex-direction: column;
@@ -2057,15 +2090,15 @@
             background: transparent;
         }
 
-        #sec-allenamento #workout-day-panels .workout-quadrant {
+        #sec-gym #workout-day-panels .workout-quadrant {
             padding: 0 !important;
         }
 
-        #sec-allenamento .workout-quadrant h3 {
+        #sec-gym .workout-quadrant h3 {
             color: #4D5D53 !important;
         }
 
-        #sec-allenamento .workout-split-fields {
+        #sec-gym .workout-split-fields {
             display: flex;
             flex-direction: column;
             flex: 1;
@@ -2078,22 +2111,22 @@
             box-shadow: inset 0 1px 2px rgba(61, 43, 31, 0.05) !important;
         }
 
-        #sec-allenamento .workout-exercise-rows {
+        #sec-gym .workout-exercise-rows {
             display: grid;
             flex: 1;
             grid-auto-rows: minmax(1.375rem, 1fr);
             min-height: 11rem;
         }
 
-        #sec-allenamento .workout-exercise-row {
+        #sec-gym .workout-exercise-row {
             min-height: 1.375rem;
         }
 
-        #sec-allenamento .workout-exercise-row + .workout-exercise-row {
+        #sec-gym .workout-exercise-row + .workout-exercise-row {
             border-top: 1px solid rgba(99, 81, 71, 0.08);
         }
 
-        #sec-allenamento .workout-exercise-cell {
+        #sec-gym .workout-exercise-cell {
             box-sizing: border-box !important;
             width: 100% !important;
             min-width: 0 !important;
@@ -2110,35 +2143,134 @@
             line-height: 1.25rem !important;
         }
 
-        #sec-allenamento .workout-repetitions-cell {
+        #sec-gym .workout-repetitions-cell {
             border-left: 1px solid rgba(99, 81, 71, 0.2) !important;
         }
 
-        #sec-allenamento .workout-exercise-cell::placeholder {
+        #sec-gym .workout-exercise-cell::placeholder {
             color: #696969 !important;
         }
 
-        #sec-allenamento .workout-exercise-divider {
+        #sec-gym .workout-exercise-divider {
             display: none;
         }
 
+        #workout-zoom-content {
+            width: min(100%, 44rem);
+            height: min(68dvh, 42rem);
+            margin-inline: auto;
+            overflow-y: auto;
+        }
+
+        #workout-zoom-modal:not(.hidden) {
+            display: flex;
+        }
+
+        #workout-zoom-modal .workout-quadrant-expanded {
+            display: flex;
+            width: 100%;
+            height: 100%;
+            min-height: 0;
+            flex-direction: column;
+            padding: 0 !important;
+            border: 0;
+            background: transparent;
+        }
+
+        #workout-zoom-modal .workout-quadrant-expanded h3 {
+            color: #4D5D53;
+            flex: 1;
+            text-align: center;
+        }
+
+        #workout-zoom-modal .workout-expand-button {
+            display: none;
+        }
+
+        #workout-zoom-modal .workout-exercise-area {
+            display: flex;
+            flex: 1;
+            flex-direction: column;
+            box-sizing: border-box !important;
+            min-height: 0;
+            padding: 0 !important;
+            border: 1px solid rgba(99, 81, 71, 0.35) !important;
+            border-radius: 0 !important;
+            background: #F5F5F5 !important;
+            box-shadow: inset 0 1px 2px rgba(61, 43, 31, 0.05) !important;
+            overflow-y: auto !important;
+        }
+
+        #workout-zoom-modal .workout-exercise-rows {
+            position: relative;
+            display: grid;
+            flex: 1;
+            grid-auto-rows: minmax(2.5rem, 1fr);
+            min-height: 100%;
+        }
+
+        #workout-zoom-modal .workout-exercise-row {
+            position: relative;
+            box-sizing: border-box;
+            min-height: 2.5rem;
+        }
+
+        #workout-zoom-modal .workout-exercise-row + .workout-exercise-row {
+            border-top: 1px solid rgba(99, 81, 71, 0.08);
+        }
+
+        #workout-zoom-modal .workout-exercise-row::after {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 66.6667%;
+            border-left: 1px solid rgba(99, 81, 71, 0.3);
+            content: "";
+            pointer-events: none;
+        }
+
+        #workout-zoom-modal .workout-exercise-cell {
+            display: flex !important;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box !important;
+            width: 100% !important;
+            min-width: 0 !important;
+            height: 100% !important;
+            min-height: 2.5rem !important;
+            padding: 0 0.5rem !important;
+            background: transparent !important;
+            color: #3D2B1F !important;
+            border: 0 !important;
+            border-radius: 0 !important;
+            box-shadow: none !important;
+            resize: none !important;
+            font-size: 1.125rem !important;
+            line-height: normal !important;
+            text-align: center !important;
+        }
+
+        #workout-zoom-modal .workout-exercise-cell::placeholder {
+            color: #696969 !important;
+        }
+
         @media (max-width: 640px) {
-            #sec-allenamento {
+            #sec-gym {
                 width: calc(100vw - 1rem) !important;
                 max-width: none !important;
                 flex: 0 0 calc(100vw - 1rem) !important;
                 margin-left: calc((100% - (100vw - 1rem)) / 2) !important;
             }
 
-            #sec-allenamento > .cozy-card {
+            #sec-gym > .cozy-card {
                 padding: 0.75rem !important;
             }
 
-            #sec-allenamento #workout-day-panels {
+            #sec-gym #workout-day-panels {
                 gap: 0.5rem;
             }
 
-            #sec-allenamento .workout-quadrant {
+            #sec-gym #workout-day-panels .workout-quadrant {
                 padding: 0.5rem !important;
             }
         }
@@ -2534,14 +2666,13 @@
                 </div>
             </div>
 
-            <div class="home-tools-grid grid grid-cols-2 md:grid-cols-3 gap-2.5">
+            <div class="home-tools-grid grid grid-cols-3 gap-2.5">
                 <section class="cozy-card home-tool-card min-w-0 rounded-xl p-2.5 space-y-2">
                     <div class="flex items-center justify-center">
                         <h2 class="font-cloud font-bold text-xs text-[#f3d5b5]">Alimentazione</h2>
                     </div>
                     <button type="button" onclick="switchTab('alimentazione')" aria-label="Apri il piano" class="home-meal-plan-button flex min-h-16 w-full flex-col items-center justify-center gap-1 rounded-lg border">
                         <i class="fa-solid fa-calendar-week text-base"></i>
-                        <span class="text-[10px] font-semibold">Apri il piano</span>
                     </button>
                 </section>
 
@@ -2549,13 +2680,21 @@
                     <div class="flex items-center justify-center">
                         <h2 class="font-cloud font-bold text-xs text-[#f3d5b5]">Allenamento</h2>
                     </div>
-                    <button type="button" onclick="switchTab('allenamento')" aria-label="Apri il programma di allenamento" class="home-meal-plan-button flex min-h-16 w-full flex-col items-center justify-center gap-1 rounded-lg border">
+                    <button type="button" onclick="switchTab('gym')" aria-label="Apri il programma di allenamento" class="home-meal-plan-button flex min-h-16 w-full flex-col items-center justify-center gap-1 rounded-lg border">
                         <i class="fa-solid fa-dumbbell text-base"></i>
-                        <span class="text-[10px] font-semibold">Apri allenamento</span>
                     </button>
                 </section>
 
-                <section class="cozy-card home-tool-card home-tasks-card col-span-2 md:col-span-1 min-w-0 w-full rounded-xl p-3.5 space-y-2.5">
+                <section class="cozy-card home-tool-card min-w-0 rounded-xl p-2.5 space-y-2">
+                    <div class="flex items-center justify-center">
+                        <h2 class="font-cloud font-bold text-xs text-[#f3d5b5]">Peso</h2>
+                    </div>
+                    <button type="button" onclick="switchTab('peso')" aria-label="Apri lo storico del peso" class="home-meal-plan-button flex min-h-16 w-full flex-col items-center justify-center gap-1 rounded-lg border">
+                        <i class="fa-solid fa-weight-scale text-base"></i>
+                    </button>
+                </section>
+
+                <section class="cozy-card home-tool-card home-tasks-card col-span-3 min-w-0 w-full rounded-xl p-3.5 space-y-2.5">
                     <div class="flex items-center justify-between gap-2">
                         <div class="flex min-w-0 items-center gap-1.5">
                             <span class="home-tool-icon w-8 h-8 shrink-0 rounded-lg bg-[#b5c99a]/15 text-[#b5c99a] flex items-center justify-center text-sm"><i class="fa-solid fa-list-check"></i></span>
@@ -2579,10 +2718,7 @@
                 <div class="home-space-title-row flex items-center justify-center gap-2 px-1">
                     <h2 class="home-space-heading font-cloud text-sm font-bold tracking-wide text-[#f3d5b5]">Apri il tuo spazio</h2>
                 </div>
-                <div class="mt-2 grid grid-cols-3 gap-1.5">
-                    <button type="button" onclick="switchTab('gym')" class="cozy-card flex flex-col items-center justify-center rounded-lg p-2 text-center transition-transform active:scale-95">
-                        <i class="fa-solid fa-dumbbell text-sm text-[#b5c99a]"></i><span class="block mt-1 text-[10px] font-cloud font-bold text-[#f7f0eb]">Gym</span>
-                    </button>
+                <div class="mt-2 grid grid-cols-2 gap-1.5">
                     <button type="button" onclick="switchTab('ricette')" class="cozy-card flex flex-col items-center justify-center rounded-lg p-2 text-center transition-transform active:scale-95">
                         <i class="fa-solid fa-utensils text-sm text-[#f3d5b5]"></i><span class="block mt-1 text-[10px] font-cloud font-bold text-[#f7f0eb]">Ricette</span>
                     </button>
@@ -2621,16 +2757,19 @@
                 </button>
             </header>
 
-            <section class="cozy-card space-y-3 rounded-[2rem] p-4 shadow-xl backdrop-blur-md">
-                <h2 class="flex items-center gap-2 text-sm font-cloud font-bold text-[#f3d5b5]">
-                    <i class="fa-solid fa-mug-hot text-[#e0a98b]"></i> Colazione e merende
-                </h2>
-                <div id="meal-plan-sections" class="space-y-3"></div>
-                <form onsubmit="addMealSection(event)" class="flex gap-2 border-t border-[#e2b4bd]/15 pt-3">
-                    <input id="meal-plan-section-name" type="text" maxlength="40" placeholder="Nome della nuova sezione" aria-label="Nome della nuova sezione" class="meal-form-input cozy-input min-w-0 flex-1 text-[10px] text-[#f7f0eb] placeholder-[#9c8a80] focus:outline-none">
-                    <button type="submit" class="meal-section-add-button flex shrink-0 items-center justify-center gap-1 rounded-lg bg-[#b5c99a] font-semibold text-[#1c1817] active:scale-95"><i class="fa-solid fa-plus"></i><span>Sezione</span></button>
-                </form>
-            </section>
+            <details class="cozy-card group space-y-3 rounded-[2rem] p-4 shadow-xl backdrop-blur-md">
+                <summary class="flex cursor-pointer list-none items-center justify-between gap-2 text-sm font-cloud font-bold text-[#f3d5b5]">
+                    <span class="flex items-center gap-2"><i class="fa-solid fa-mug-hot text-[#e0a98b]"></i> Colazione e merende</span>
+                    <i class="fa-solid fa-chevron-down text-[10px] text-[#9c8a80] transition-transform group-open:rotate-180" aria-hidden="true"></i>
+                </summary>
+                <div class="space-y-3">
+                    <div id="meal-plan-sections" class="space-y-3"></div>
+                    <form onsubmit="addMealSection(event)" class="flex gap-2 border-t border-[#e2b4bd]/15 pt-3">
+                        <input id="meal-plan-section-name" type="text" maxlength="40" placeholder="Nome della nuova sezione" aria-label="Nome della nuova sezione" class="meal-form-input cozy-input min-w-0 flex-1 text-[10px] text-[#f7f0eb] placeholder-[#9c8a80] focus:outline-none">
+                        <button type="submit" class="meal-section-add-button flex shrink-0 items-center justify-center gap-1 rounded-lg bg-[#b5c99a] font-semibold text-[#1c1817] active:scale-95"><i class="fa-solid fa-plus"></i><span>Sezione</span></button>
+                    </form>
+                </div>
+            </details>
 
             <section class="cozy-card space-y-4 rounded-[2rem] p-4 shadow-xl backdrop-blur-md">
                 <div>
@@ -2692,19 +2831,55 @@
             </section>
         </section>
 
-        <!-- PROGRAMMA DI ALLENAMENTO -->
-        <section id="sec-allenamento" class="tab-section w-full space-y-4 pt-4 pb-6 hidden">
+        <!-- STORICO PESO -->
+        <section id="sec-peso" class="tab-section w-full space-y-4 pt-4 pb-6 hidden">
             <header class="flex items-center">
                 <button type="button" onclick="switchTab('home')" aria-label="Torna alla home" title="Torna alla home" class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#e2b4bd]/20 bg-[#2b2321]/80 text-[#e8c2ca] active:scale-95">
                     <i class="fa-solid fa-arrow-left"></i>
                 </button>
             </header>
+
             <section class="cozy-card space-y-4 rounded-[2rem] p-4 shadow-xl backdrop-blur-md">
                 <h2 class="flex items-center gap-2 text-sm font-cloud font-bold text-[#f3d5b5]">
-                    <i class="fa-solid fa-dumbbell text-[#e0a98b]"></i> Il mio allenamento
+                    <i class="fa-solid fa-weight-scale text-[#e0a98b]" aria-hidden="true"></i> Il mio peso
                 </h2>
-                <div id="workout-day-panels" class="grid grid-cols-2 gap-2 sm:gap-3" aria-label="Quadranti del programma di allenamento"></div>
-                <p id="workout-plan-status" role="status" aria-live="polite" class="hidden text-[11px] text-[#e8c2ca]"></p>
+                <form id="weight-entry-form" onsubmit="saveWeightEntry(event)" class="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] sm:items-end">
+                    <label class="block min-w-0 space-y-1.5 text-xs font-semibold text-[#e8c2ca]">
+                        <span>Data</span>
+                        <input id="weight-entry-date" type="date" required class="cozy-input box-border w-full min-w-0 max-w-full rounded-xl p-3 text-sm text-[#f7f0eb] focus:outline-none">
+                    </label>
+                    <label class="block min-w-0 space-y-1.5 text-xs font-semibold text-[#e8c2ca]">
+                        <span>Peso (kg)</span>
+                        <input id="weight-entry-kg" type="number" min="0.1" max="999.9" step="0.1" inputmode="decimal" required placeholder="Es. 65,5" class="cozy-input box-border w-full min-w-0 max-w-full rounded-xl p-3 text-sm text-[#f7f0eb] placeholder-[#9c8a80] focus:outline-none">
+                    </label>
+                    <div class="flex gap-2">
+                        <button id="weight-entry-submit" type="submit" class="min-h-11 flex-1 rounded-xl bg-[#b5c99a] px-4 text-xs font-bold text-[#1c1817] active:scale-95">
+                            <i class="fa-solid fa-plus mr-1" aria-hidden="true"></i> Salva
+                        </button>
+                        <button id="weight-entry-cancel" type="button" onclick="cancelWeightEdit()" class="hidden min-h-11 rounded-xl bg-[#382d2a] px-3 text-xs font-bold text-[#e8c2ca] active:scale-95">
+                            Annulla
+                        </button>
+                    </div>
+                </form>
+                <p id="weight-tracker-status" role="status" aria-live="polite" class="hidden text-xs text-[#e8c2ca]"></p>
+            </section>
+
+            <section class="cozy-card space-y-4 rounded-[2rem] p-4 shadow-xl backdrop-blur-md">
+                <div>
+                    <h2 class="flex items-center gap-2 text-sm font-cloud font-bold text-[#f3d5b5]">
+                        <i class="fa-solid fa-chart-line text-[#e0a98b]" aria-hidden="true"></i> Andamento
+                    </h2>
+                </div>
+                <p id="weight-chart-empty" class="hidden py-8 text-center text-sm text-[#c7b3a6]">Aggiungi una misurazione per vedere il grafico.</p>
+                <svg id="weight-chart" class="hidden block h-96 w-full overflow-visible" viewBox="0 0 420 420" role="img" aria-label="Grafico dello storico del peso. L’asse verticale mostra il peso in chilogrammi e l’asse orizzontale la data della misurazione."></svg>
+            </section>
+
+            <section class="cozy-card space-y-3 rounded-[2rem] p-4 shadow-xl backdrop-blur-md">
+                <h2 class="flex items-center gap-2 text-sm font-cloud font-bold text-[#f3d5b5]">
+                    <i class="fa-solid fa-clock-rotate-left text-[#e0a98b]" aria-hidden="true"></i> Storico
+                </h2>
+                <p id="weight-history-empty" class="hidden text-xs text-[#c7b3a6]">Non hai ancora inserito misurazioni.</p>
+                <ul id="weight-history-list" class="space-y-2"></ul>
             </section>
         </section>
 
@@ -2757,44 +2932,60 @@
 
         <!-- SECTION 3: GYM -->
         <section id="sec-gym" class="tab-section w-full space-y-4 pt-4 pb-6 hidden">
-            <div class="p-5 cozy-card rounded-[2rem] shadow-xl backdrop-blur-md space-y-4">
-                <div class="flex items-center justify-between border-b border-[#e2b4bd]/15 pb-3">
+            <header class="flex items-center">
+                <button type="button" onclick="switchTab('home')" aria-label="Torna alla home" title="Torna alla home" class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#e2b4bd]/20 bg-[#2b2321]/80 text-[#e8c2ca] active:scale-95">
+                    <i class="fa-solid fa-arrow-left"></i>
+                </button>
+            </header>
+            <details class="p-5 cozy-card group space-y-4 rounded-[2rem] shadow-xl backdrop-blur-md">
+                <summary class="flex cursor-pointer list-none items-center justify-between gap-2 border-b border-[#e2b4bd]/15 pb-3">
                     <h3 class="text-base font-cloud font-bold text-[#e8c2ca] flex items-center">
-                        <i class="fa-solid fa-dumbbell mr-2"></i> Gym
+                        <i class="fa-solid fa-dumbbell mr-2"></i> Calendario Gym
                     </h3>
-                </div>
+                    <i class="fa-solid fa-chevron-down text-[10px] text-[#9c8a80] transition-transform group-open:rotate-180" aria-hidden="true"></i>
+                </summary>
 
-                <div class="flex items-center justify-between px-1">
-                    <button onclick="changeGymMonth(-1)" aria-label="Mese precedente" class="w-8 h-8 rounded-full bg-[#e2b4bd]/10 text-[#e8c2ca] border border-[#e2b4bd]/20 active:scale-90 transition-transform">
-                        <i class="fa-solid fa-chevron-left text-[10px]"></i>
-                    </button>
-                    <div class="text-center">
-                        <h4 id="gym-month-title" class="font-cloud font-bold text-lg text-[#f7f0eb] capitalize">Mese</h4>
-                        <p class="text-[10px] uppercase tracking-[0.16em] text-[#9c8a80]">Segna i tuoi allenamenti</p>
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between px-1">
+                        <button onclick="changeGymMonth(-1)" aria-label="Mese precedente" class="w-8 h-8 rounded-full bg-[#e2b4bd]/10 text-[#e8c2ca] border border-[#e2b4bd]/20 active:scale-90 transition-transform">
+                            <i class="fa-solid fa-chevron-left text-[10px]"></i>
+                        </button>
+                        <div class="text-center">
+                            <h4 id="gym-month-title" class="font-cloud font-bold text-lg text-[#f7f0eb] capitalize">Mese</h4>
+                            <p class="text-[10px] uppercase tracking-[0.16em] text-[#9c8a80]">Segna i tuoi allenamenti</p>
+                        </div>
+                        <button onclick="changeGymMonth(1)" aria-label="Mese successivo" class="w-8 h-8 rounded-full bg-[#e2b4bd]/10 text-[#e8c2ca] border border-[#e2b4bd]/20 active:scale-90 transition-transform">
+                            <i class="fa-solid fa-chevron-right text-[10px]"></i>
+                        </button>
                     </div>
-                    <button onclick="changeGymMonth(1)" aria-label="Mese successivo" class="w-8 h-8 rounded-full bg-[#e2b4bd]/10 text-[#e8c2ca] border border-[#e2b4bd]/20 active:scale-90 transition-transform">
-                        <i class="fa-solid fa-chevron-right text-[10px]"></i>
-                    </button>
-                </div>
 
-                <div class="cozy-inset-panel p-3">
-                    <div class="grid grid-cols-7 gap-1.5 mb-2 text-center">
-                        <span class="text-[9px] font-bold uppercase text-[#e0a98b]">Lun</span>
-                        <span class="text-[9px] font-bold uppercase text-[#e0a98b]">Mar</span>
-                        <span class="text-[9px] font-bold uppercase text-[#e0a98b]">Mer</span>
-                        <span class="text-[9px] font-bold uppercase text-[#e0a98b]">Gio</span>
-                        <span class="text-[9px] font-bold uppercase text-[#e0a98b]">Ven</span>
-                        <span class="text-[9px] font-bold uppercase text-[#e0a98b]">Sab</span>
-                        <span class="text-[9px] font-bold uppercase text-[#e0a98b]">Dom</span>
+                    <div class="cozy-inset-panel p-3">
+                        <div class="grid grid-cols-7 gap-1.5 mb-2 text-center">
+                            <span class="text-[9px] font-bold uppercase text-[#e0a98b]">Lun</span>
+                            <span class="text-[9px] font-bold uppercase text-[#e0a98b]">Mar</span>
+                            <span class="text-[9px] font-bold uppercase text-[#e0a98b]">Mer</span>
+                            <span class="text-[9px] font-bold uppercase text-[#e0a98b]">Gio</span>
+                            <span class="text-[9px] font-bold uppercase text-[#e0a98b]">Ven</span>
+                            <span class="text-[9px] font-bold uppercase text-[#e0a98b]">Sab</span>
+                            <span class="text-[9px] font-bold uppercase text-[#e0a98b]">Dom</span>
+                        </div>
+                        <div id="gym-calendar-grid" class="grid grid-cols-7 gap-1.5"></div>
                     </div>
-                    <div id="gym-calendar-grid" class="grid grid-cols-7 gap-1.5"></div>
-                </div>
 
-                <div class="flex items-center justify-between px-1 text-[10px] text-[#c7b3a6]">
-                    <span><i class="fa-regular fa-square-check mr-1 text-[#b5c99a]"></i><span id="gym-completed-count">0</span> allenamenti</span>
-                    <button onclick="goToCurrentGymMonth()" class="text-[#e8c2ca] font-bold active:scale-95 transition-transform">Oggi</button>
+                    <div class="flex items-center justify-between px-1 text-[10px] text-[#c7b3a6]">
+                        <span><i class="fa-regular fa-square-check mr-1 text-[#b5c99a]"></i><span id="gym-completed-count">0</span> allenamenti</span>
+                        <button onclick="goToCurrentGymMonth()" class="text-[#e8c2ca] font-bold active:scale-95 transition-transform">Oggi</button>
+                    </div>
                 </div>
-            </div>
+            </details>
+
+            <section class="workout-planner-card cozy-card space-y-4 rounded-[2rem] p-4 shadow-xl backdrop-blur-md">
+                <h2 class="flex items-center gap-2 text-sm font-cloud font-bold text-[#f3d5b5]">
+                    <i class="fa-solid fa-dumbbell text-[#e0a98b]"></i> Il mio allenamento
+                </h2>
+                <div id="workout-day-panels" class="grid grid-cols-2 gap-2 sm:gap-3" aria-label="Quadranti del programma di allenamento"></div>
+                <p id="workout-plan-status" role="status" aria-live="polite" class="hidden text-[11px] text-[#e8c2ca]"></p>
+            </section>
         </section>
 
         <!-- SECTION: RICETTE -->
@@ -2936,6 +3127,12 @@
                     <div id="shopping-food-list" class="space-y-3"></div>
                 </div>
             </div>
+            <button type="button" onclick="switchTab('alimentazione')" class="cozy-card flex w-fit max-w-full items-center gap-3 rounded-2xl p-4 text-left text-[#f3d5b5] shadow-lg active:scale-[0.98]">
+                <span class="flex items-center gap-3">
+                    <i class="fa-solid fa-utensils text-[#e0a98b]" aria-hidden="true"></i>
+                    <span class="text-sm font-cloud font-bold">Alimentazione</span>
+                </span>
+            </button>
         </section>
 
         <!-- SECTION 5: UNIVERSITÀ -->
@@ -3051,6 +3248,12 @@
         </section>
 
     </main>
+
+    <div id="workout-zoom-modal" class="fixed inset-0 z-[60] hidden items-center justify-center bg-black/70 p-3 sm:p-6" role="dialog" aria-modal="true" aria-label="Allenamento ingrandito" onclick="if (!event.target.closest('.workout-quadrant-expanded')) closeWorkoutZoom()">
+        <div class="flex max-h-[90dvh] w-full flex-col overflow-hidden rounded-[2rem] border border-[#e2b4bd]/25 bg-[#f5f5f0] p-4 shadow-2xl sm:p-6">
+            <div id="workout-zoom-content"></div>
+        </div>
+    </div>
 
     <!-- Navigation Bar In Basso -->
     <nav class="fixed bottom-0 left-0 right-0 bg-[#1c1817]/92 backdrop-blur-xl border-t border-[#e2b4bd]/15 flex justify-around items-center z-50">
