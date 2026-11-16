@@ -617,8 +617,8 @@ function renderWeightChart(entries) {
     const firstDate = new Date(`${entries[0].date}T00:00:00`);
     const lastDate = new Date(`${entries[entries.length - 1].date}T00:00:00`);
     const dateSpan = lastDate.getTime() - firstDate.getTime();
-    const lowerWeight = 60;
-    const upperWeight = 90;
+    const lowerWeight = 70;
+    const upperWeight = 85;
     const xForDate = date => margins.left + (dateSpan ? (new Date(`${date}T00:00:00`).getTime() - firstDate.getTime()) / dateSpan * plotWidth : plotWidth / 2);
     const yForWeight = kg => margins.top + (upperWeight - kg) / (upperWeight - lowerWeight) * plotHeight;
 
@@ -648,14 +648,57 @@ function renderWeightChart(entries) {
         'stroke-linejoin': 'round'
     }));
     entries.forEach(entry => {
+        const x = xForDate(entry.date);
+        const y = yForWeight(entry.kg);
         const point = createWeightChartElement('circle', {
-            cx: xForDate(entry.date),
-            cy: yForWeight(entry.kg),
-            r: 5,
-            fill: '#000000'
+            cx: x,
+            cy: y,
+            r: 7,
+            fill: '#000000',
+            tabindex: 0,
+            role: 'button',
+            'aria-label': `${new Date(`${entry.date}T00:00:00`).toLocaleDateString('it-IT')}: ${entry.kg.toLocaleString('it-IT', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} kg`,
+            style: 'cursor: pointer'
         });
         point.append(createWeightChartElement('title'));
         point.firstElementChild.textContent = `${new Date(`${entry.date}T00:00:00`).toLocaleDateString('it-IT')}: ${entry.kg.toLocaleString('it-IT', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} kg`;
+        const showWeight = () => {
+            chart.querySelector('[data-weight-tooltip="true"]')?.remove();
+
+            const label = `${entry.kg.toLocaleString('it-IT', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} kg`;
+            const tooltipWidth = label.length * 8 + 16;
+            const tooltipHeight = 28;
+            const tooltipX = Math.max(4, Math.min(x - tooltipWidth / 2, width - tooltipWidth - 4));
+            const tooltipY = Math.max(4, Math.min(y - tooltipHeight - 10, height - tooltipHeight - 4));
+            const tooltip = createWeightChartElement('g', { 'data-weight-tooltip': 'true', 'pointer-events': 'none' });
+            tooltip.append(
+                createWeightChartElement('rect', {
+                    x: tooltipX,
+                    y: tooltipY,
+                    width: tooltipWidth,
+                    height: tooltipHeight,
+                    rx: 7,
+                    fill: '#f3d5b5'
+                }),
+                createWeightChartElement('text', {
+                    x: tooltipX + tooltipWidth / 2,
+                    y: tooltipY + 19,
+                    fill: '#1c1817',
+                    'font-size': 13,
+                    'font-weight': 700,
+                    'text-anchor': 'middle'
+                })
+            );
+            tooltip.lastElementChild.textContent = label;
+            chart.append(tooltip);
+        };
+        point.addEventListener('click', showWeight);
+        point.addEventListener('keydown', event => {
+            if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                showWeight();
+            }
+        });
         chart.append(point);
     });
 }
